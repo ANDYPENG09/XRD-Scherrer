@@ -1,57 +1,35 @@
-# XRD-Scherrer — Crystallite Size Analysis
+# XRD-Scherrer
 
-A single-file, zero-dependency, **offline** HTML tool for estimating the
-**coherently diffracting domain size** from XRD peak broadening via the
-Scherrer equation. All processing runs locally in the browser — data never
-leaves your device.
+Offline XRD **coherently diffracting domain-size** analysis. Single-file HTML with Scherrer, multi-peak and isotropic Williamson–Hall modes. **v1.1.0**.
 
-## Features
+**[Open the tool](https://andypeng09.github.io/xrd-toolkit/demos/scherrer/)** · [Download HTML](https://raw.githubusercontent.com/ANDYPENG09/XRD-Scherrer/main/index.html) · [XRD Toolkit](https://andypeng09.github.io/xrd-toolkit/)
 
-- **Single-peak** and **multi-peak + Williamson-Hall** modes.
-- **PtCo empirical (220 integral)** mode — auto-analyzes the (220) reflection
-  with a SNIP baseline + Gaussian integral breadth, with a TEM calibration
-  factor `C`.
-- **Standard Scherrer** (endpoint baseline) and **Optimized Scherrer**
-  (SNIP baseline + Gaussian fit).
-- FWHM / integral-breadth width modes; instrumental-broadening correction
-  (Gaussian quadratic / Cauchy linear).
-- SNR estimation and Kα₂ applicability check (auto-skipped when
-  width/separation > 10).
-- Built-in PtCo L1₀ demo data (desensitized reconstruction of a measured
-  pattern).
+## What it computes
 
-## Formula
+- Scherrer: D = Kλ / (β cosθ), with θ = 2θ/2 and β in radians.
+- Endpoint-baseline integration or SNIP baseline + Gaussian **width approximation**. The SNIP mode infers a Gaussian area from peak height/FWHM; it is not a nonlinear Gaussian fit.
+- FWHM or integral breadth. Instrument correction is selected independently: quadratic subtraction for a Gaussian profile, linear for a Cauchy profile. Supply instrumental width of the same width definition; mixed profiles require a more complete treatment.
+- Multi-peak isotropic Williamson–Hall: β cosθ = Kλ/D + 4ε sinθ. At least three distinct clean same-phase reflections; return intercept, slope, R², D and strain. Nonpositive intercepts/negative strain suppress physical outputs rather than being converted to positive values.
+- PtCo (220) empirical cross-check with a positive TEM calibration factor C. (220) is a **fundamental** reflection; broadening/overlap/anisotropy determine its suitability.
+- CSV/JSON exports with units and settings; input edits invalidate old results.
 
+**Kα₂ stripping is not implemented.** Use monochromated or externally corrected data. Scherrer domain size is not particle diameter; microstrain, faults, anisotropy and overlap can bias it. A W-H line fit and high R² do not validate those assumptions.
+
+## Use
+
+Open `index.html`, load the synthetic demo or your numeric-text/JSON scan, check peak windows, choose width and instrumental-profile settings, and calculate. For W-H, add at least three isolated reflections. Compare (111)/(220) with caution if split or overlapping fundamentals are present.
+
+Text: `.xy .xye .csv .txt .dat .asc .ras`. JSON: paired `x`/`y` arrays or point pairs/objects. Descending scans are normalized; nonfinite, all-zero, duplicate and nonmonotonic input is rejected. Incomplete FWHM crossings require a wider region.
+
+## Validation
+
+```bash
+npm ci
+npm test
 ```
-D = K·λ / (β·cosθ)
-```
 
-- `K` — shape factor (default 0.89)
-- `λ` — wavelength (default 1.540598 Å, Cu Kα₁)
-- `β` — sample broadening after instrumental correction (radians)
-- `θ` — Bragg angle (2θ/2)
+Regressions recover the analytic Gaussian Scherrer width and a synthetic W-H case (D=50 nm, ε=0.001), exercise both instrument-profile corrections, reject nonphysical cases, and check parsing, exports and result invalidation. DOM/canvas mocks do not verify browser-pixel rendering.
 
-## Usage
+References: Scherrer (1918); Williamson & Hall, Acta Metallurgica 1 (1953), 22–31, [doi:10.1016/0001-6160(53)90006-6](https://doi.org/10.1016/0001-6160(53)90006-6); Cullity & Stock, *Elements of X-Ray Diffraction*; Ryan et al. (1988), SNIP baseline.
 
-Open `index.html` in any modern browser. Import a two-column XRD file
-(`.xy .xye .csv .txt .dat .asc .ras .json`) or click **Load demo data**.
-
-## Algorithms & references
-
-- Scherrer (1918); Cullity & Stock, *Elements of X-Ray Diffraction*, 3rd ed.
-- DTU Nanolab — instrumental broadening in T2T geometry.
-- SNIP background: Ryan et al. (1988).
-- Levenberg–Marquardt least squares, Gaussian peak fitting — standard methods
-  implemented from scratch.
-
-See `LICENSE_AUDIT.md` for the full license/copyright audit.
-
-## Data & applicability
-
-These tools are developed from my own measured XRD datasets. They are currently
-best adapted for PtCo alloy (L1₀ ordering) and Pt/C catalysts. I will keep
-extending them to more sample types as my measurement data grows.
-
-## License
-
-MIT © 2026 Yu Peng
+[Changelog](CHANGELOG.md) · [License audit](LICENSE_AUDIT.md) · [MIT License](LICENSE)
