@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.2.1 — 2026-11-24
+
+- Add a prominent bilingual **Final Summary: Average Crystallite Size & Deviation Range** box at the bottom of every analysis panel (Tab ① single peak & PtCo `(220)+(202)`, Tab ② multi-peak deconvolution & CSD, Tab ③ multi-peak + Williamson–Hall).
+- Report area-weighted mean ± RMS deviation, arithmetic mean ± sample SD (`±1σ` range), observed min–max range, median, RSD %, and W–H / empirical `D×C` reference values for multi-peak analyses, plus SNR/step-based uncertainty interval `[D−ΔD, D+ΔD]` for single-peak analyses.
+- Add volume-weighted standard deviation `σ_V` to NNLS CSD inversion and display both `⟨D⟩V ± σV` / `⟨D⟩N ± σN` and `D10–D90` dispersion intervals in the CSD summary.
+- Persist structured `summary` statistics in JSON exports and add summary mean/SD/interval and `CSD_sigmaV_nm` columns to CSV exports.
+
 ## v1.2.0 — 2026-11-24
 
 - Add Tab ② multi-peak nonlinear deconvolution powered by a from-scratch analytic-Jacobian, multi-start, box-constrained Levenberg–Marquardt solver supporting 1–6 overlapping Pseudo-Voigt / Gaussian / Lorentzian sub-peaks with joint linear or SNIP baseline.

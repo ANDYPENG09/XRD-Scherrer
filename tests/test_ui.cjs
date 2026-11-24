@@ -42,7 +42,8 @@ evalJS("$('inst').value=0;$('broadeningModel').value='gaussian';$('mode').value=
 evalJS("$('left').value=38;$('right').value=42;");
 doc.getElementById('calc').click();
 assert(evalJS('state.analysis.peaks[0].D')>0,'Single peak calc produces D>0');
-assert.equal(evalJS('state.analysis.tool_version'),'1.2.0','Tool version is 1.2.0');
+assert.equal(evalJS('state.analysis.tool_version'),'1.2.1','Tool version is 1.2.1');
+assert(evalJS('state.analysis.summary && state.analysis.summary.count===1 && state.analysis.summary.interval_low_nm<=state.analysis.summary.mean_nm && state.analysis.summary.interval_high_nm>=state.analysis.summary.mean_nm'),'Single-peak summary provides mean and deviation interval');
 
 const wh=evalJS('williamsonHall([40,60,80].map(peak=>{const theta=peak*Math.PI/360;return{peak,correctedDeg:(.89*.1540598/50+.001*4*Math.sin(theta))/Math.cos(theta)*180/Math.PI};}),.89,1.540598)');
 assert(Math.abs(wh.D_nm-50)<1e-8,'W-H recovers D=50 nm');
@@ -50,6 +51,16 @@ assert(Math.abs(wh.strain-0.001)<1e-10,'W-H recovers strain=0.001');
 assert(Math.abs(wh.r2-1)<1e-10,'W-H R2=1');
 assert.equal(evalJS('williamsonHall([{peak:40,correctedDeg:1}],.89,1.540598).D_nm'),null);
 assert.equal(evalJS('williamsonHall([40,60,80].map(peak=>({peak,correctedDeg:(.02-.001*4*Math.sin(peak*Math.PI/360))/Math.cos(peak*Math.PI/360)*180/Math.PI})),.89,1.540598).D_nm'),null);
+
+// 2b. Unit test summarizeSizes (arithmetic mean ± sample SD, area-weighted mean ± RMS deviation, min-max range)
+const sumCheck=evalJS('summarizeSizes([{D:4,area:100},{D:6,area:300},{D:8,area:100}])');
+assert.equal(sumCheck.count,3);
+assert(Math.abs(sumCheck.mean_nm-6)<1e-12,'Arithmetic mean = 6');
+assert(Math.abs(sumCheck.sd_nm-2)<1e-12,'Sample SD = 2');
+assert(Math.abs(sumCheck.weighted_mean_nm-6)<1e-12,'Area-weighted mean = 6');
+assert(Math.abs(sumCheck.weighted_sd_nm-Math.sqrt(1.6))<1e-12,'Area-weighted RMS deviation');
+assert.equal(sumCheck.min_nm,4);assert.equal(sumCheck.max_nm,8);
+assert.equal(sumCheck.interval_low_nm,4);assert.equal(sumCheck.interval_high_nm,8);
 
 // 3. (220)+(202) overlapping doublet deconvolution: area recovery, endpoint underestimation & tetragonal c/a
 const deconvCheck=evalJS(`(()=>{
@@ -78,9 +89,10 @@ const lognCheck=evalJS(`(()=>{
   const s0=2*Math.sin(center*Math.PI/360)/lamNm;
   const sArr=xs.map(tt=>2*Math.sin(tt*Math.PI/360)/lamNm-s0);
   const csd=invertCSD_NNLS(sArr,prof,{Dmin:1,Dmax:60,regMode:'auto'});
-  return{r2:csd.r2,DN:csd.D_N,DA:csd.D_A,DV:csd.D_V,trueDN:D0*Math.exp(.5*sig*sig),trueDA:D0*Math.exp(2.5*sig*sig),trueDV:D0*Math.exp(3.5*sig*sig)};
+  return{r2:csd.r2,DN:csd.D_N,DA:csd.D_A,DV:csd.D_V,sigV:csd.sigma_V,trueDN:D0*Math.exp(.5*sig*sig),trueDA:D0*Math.exp(2.5*sig*sig),trueDV:D0*Math.exp(3.5*sig*sig)};
 })()`);
 assert(lognCheck.r2>0.998,'Lognormal CSD R2 > 0.998');
+assert(lognCheck.sigV>0,'Lognormal CSD computes positive sigma_V');
 assert(Math.abs(lognCheck.DV-lognCheck.trueDV)/lognCheck.trueDV<0.12,'Lognormal NNLS <D>V within 12%');
 assert(Math.abs(lognCheck.DA-lognCheck.trueDA)/lognCheck.trueDA<0.15,'Lognormal NNLS <D>A within 15%');
 assert(Math.abs(lognCheck.DN-lognCheck.trueDN)/lognCheck.trueDN<0.25,'Lognormal NNLS <D>N within 25%');
@@ -122,6 +134,8 @@ assert.equal(Number(doc.getElementById('right').value),75);
 doc.getElementById('calc').click();
 assert.equal(evalJS('state.analysis.method'),'ptco_deconv');
 assert.equal(evalJS('state.analysis.peaks.length'),2);
+assert(evalJS('state.analysis.summary.count===2 && state.analysis.summary.weighted_mean_nm>0'),'PtCo deconv summary populated');
+assert(doc.getElementById('singleResult').innerHTML.includes('summary-box'),'PtCo deconv renders final summary box');
 assert(evalJS('state.analysis.lattice.cOverA')>0.9&&evalJS('state.analysis.lattice.cOverA')<1.0);
 
 // Tab 2: Bimodal (111) preset -> Deconv -> Composite CSD -> Export CSD CSV
@@ -131,12 +145,16 @@ doc.getElementById('deconvTab').click();
 doc.getElementById('presetBimodal').click();
 doc.getElementById('runDeconv').click();
 assert.equal(evalJS('state.analysis.method'),'deconvolution');
+assert(doc.getElementById('deconvResult').innerHTML.includes('summary-box'),'Deconv renders final summary box');
 assert.equal(doc.getElementById('csdTarget').value,'composite','Co-centered bimodal defaults CSD target to composite');
 assert.equal(doc.getElementById('exportCSDCSV').disabled,true,'CSD CSV disabled before CSD runs');
 doc.getElementById('runCSD').click();
 assert.equal(evalJS('state.analysis.csd.nnls.bimodal'),true,'Bimodal demo (111) CSD detects bimodal modes');
+assert(evalJS('state.analysis.csd.nnls.sigma_V')>0,'CSD stores sigma_V');
+assert(doc.getElementById('csdResult').innerHTML.includes('summary-box'),'CSD renders final summary box');
 assert.equal(doc.getElementById('exportCSDCSV').disabled,false,'CSD CSV enabled after CSD runs');
 assert(evalJS('csdCSV(state.analysis.csd)').includes('D_nm'),'CSD CSV has header');
+assert(evalJS('analysisCSV(state.analysis)').includes('summary_mean_nm'),'Analysis CSV includes summary columns');
 doc.getElementById('exportJSON').click();
 doc.getElementById('exportCSV').click();
 doc.getElementById('exportCSDCSV').click();
@@ -148,6 +166,9 @@ doc.getElementById('ptcoL10').click();
 doc.getElementById('multiCalc').click();
 assert.equal(evalJS('state.analysis.method'),'multi_peak');
 assert.equal(evalJS('state.analysis.peaks.length'),5,'PtCo L10 preset extracts 5 reflections for W-H');
+assert.equal(evalJS('state.analysis.summary.count'),5,'Multi-peak summary aggregates all 5 peaks');
+assert(evalJS('state.analysis.summary.min_nm<=state.analysis.summary.mean_nm && state.analysis.summary.mean_nm<=state.analysis.summary.max_nm'));
+assert(doc.getElementById('multiResult').innerHTML.includes('summary-box'),'Multi-peak renders final summary box');
 assert(evalJS('state.analysis.lattice.pair')==='(200)+(002)'||evalJS('state.analysis.lattice.pair')==='(220)+(202)');
 
 // Language toggle & input invalidation
@@ -162,5 +183,5 @@ assert.equal(evalJS('state.analysis'),null,'Input edit invalidates state.analysi
 assert.equal(doc.getElementById('exportCSV').disabled,true,'Input edit disables exportCSV');
 assert.equal(doc.getElementById('exportCSDCSV').disabled,true,'Input edit disables exportCSDCSV');
 
-console.log('XRD-Scherrer v1.2.0: parsing, analytic Scherrer, (220)+(202) deconvolution, lattice c/a, NNLS lognormal & bimodal CSD, Krill-Birringer suppression, L10 5-peak W-H, exports and invalidation passed');
+console.log('XRD-Scherrer v1.2.1: parsing, analytic Scherrer, size summaries, (220)+(202) deconvolution, lattice c/a, NNLS lognormal & bimodal CSD, Krill-Birringer suppression, L10 5-peak W-H, exports and invalidation passed');
 dom.window.close();
