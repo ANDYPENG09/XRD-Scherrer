@@ -80,6 +80,13 @@ canvas{display:block;width:100%;height:350px;border:1px solid var(--line);border
 .preset-bar button{padding:6px 11px;font-size:12px}
 .csd-box{background:#f0fdfa;border:1px solid #99f6e4;border-radius:10px;padding:14px 16px;margin-top:14px}
 .csd-box h3{border-bottom-color:#99f6e4;color:#115e59;margin-top:2px}
+.summary-box{background:linear-gradient(135deg,#ecfdf5,#f0fdfa);border:1.5px solid #34d399;border-radius:10px;padding:12px 15px;margin-top:12px}
+.summary-box .s-title{font-size:13.5px;font-weight:700;color:#065f46;margin-bottom:6px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:9px}
+.summary-item{background:#ffffff;border:1px solid #a7f3d0;border-radius:8px;padding:8px 11px}
+.summary-item .sk{font-size:11.5px;color:#047857;font-weight:600}
+.summary-item .sv{font:700 16px Consolas,Menlo,monospace;color:#064e3b;margin-top:2px}
+.summary-item .sn{font-size:11.5px;color:#475569;margin-top:2px}
 footer{text-align:center;color:var(--muted);font-size:12px;padding-top:10px}
 @media(max-width:650px){.wrap{padding:12px 9px 35px}header{padding:18px 16px}h1{font-size:20px}.card{padding:15px 13px}canvas{height:270px}}
 </style>
@@ -96,7 +103,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding-top:10px}
     <button id="langToggle" class="lang-btn" type="button">中文 / EN</button>
   </div>
   <div class="badges">
-    <span class="badge">v1.2.0</span>
+    <span class="badge">v1.2.1</span>
     <span class="badge" data-i18n="bZero">✓ Zero dependencies</span>
     <span class="badge" data-i18n="bDeconv">✓ Pseudo-Voigt LM Deconvolution</span>
     <span class="badge" data-i18n="bCSD">✓ Spherical NNLS + Krill–Birringer CSD</span>
@@ -294,7 +301,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding-top:10px}
   </div>
 </section>
 
-<footer><a href="https://andypeng09.github.io/xrd-toolkit/">XRD Toolkit</a> · XRD-Scherrer v1.2.0 · Single-file HTML · MIT License · Author: Yu Peng (ANDYPENG09)</footer>
+<footer><a href="https://andypeng09.github.io/xrd-toolkit/">XRD Toolkit</a> · XRD-Scherrer v1.2.1 · Single-file HTML · MIT License · Author: Yu Peng (ANDYPENG09)</footer>
 </div>
 
 <script>
@@ -303,7 +310,7 @@ const $=id=>document.getElementById(id);
 const state={x:[],y:[],name:'Demo data',fmt:'DEMO',zoom:null,analysis:null,lastDeconv:null,lang:'en',activeTab:'single'};
 const REGIONS=[];
 const TOOL_ID='XRD-Scherrer';
-const TOOL_VERSION='1.2.0';
+const TOOL_VERSION='1.2.1';
 const REFERENCES={
   scherrer:'Scherrer (1918); Cullity & Stock, Elements of X-Ray Diffraction, 3rd ed.',
   wh:'Williamson & Hall, Acta Metallurgica 1 (1953), 22-31',
@@ -449,14 +456,16 @@ function rowsCSV(rows){return rows.map(r=>r.map(csvCell).join(',')).join('\r\n')
 function analysisCSV(a){
   const peaks=a.peaks||[];
   return rowsCSV([
-    ['sample_name','tool_version','method','peak','2theta_deg','height','fwhm_deg','integral_breadth_deg','eta','net_area','area_fraction','corrected_width_deg','size_nm','empirical_size_nm','WH_size_nm','WH_strain','WH_R2','lattice_a_A','lattice_c_A','c_over_a','CSD_DN_nm','CSD_sigmaN_nm','CSD_DA_nm','CSD_DV_nm'],
+    ['sample_name','tool_version','method','peak','2theta_deg','height','fwhm_deg','integral_breadth_deg','eta','net_area','area_fraction','corrected_width_deg','size_nm','empirical_size_nm','WH_size_nm','WH_strain','WH_R2','lattice_a_A','lattice_c_A','c_over_a','summary_mean_nm','summary_sd_nm','summary_weighted_mean_nm','summary_weighted_sd_nm','summary_low_nm','summary_high_nm','CSD_DN_nm','CSD_sigmaN_nm','CSD_DA_nm','CSD_DV_nm','CSD_sigmaV_nm'],
     ...peaks.map(p=>[
       a.sample_name,a.tool_version,a.method,p.label,p.peak,p.max??p.height??null,
       p.fwhm,p.integralBreadth,p.eta??null,p.area??null,p.areaFraction??null,
       p.correctedDeg,p.D,p.empirical_size_nm??null,
       a.williamson_hall?.D_nm??null,a.williamson_hall?.strain??null,a.williamson_hall?.r2??null,
       a.lattice?.a??null,a.lattice?.c??null,a.lattice?.cOverA??null,
-      a.csd?.nnls?.D_N??null,a.csd?.nnls?.sigma_N??null,a.csd?.nnls?.D_A??null,a.csd?.nnls?.D_V??null
+      a.summary?.mean_nm??null,a.summary?.sd_nm??null,a.summary?.weighted_mean_nm??null,a.summary?.weighted_sd_nm??null,
+      a.summary?.interval_low_nm??null,a.summary?.interval_high_nm??null,
+      a.csd?.nnls?.D_N??null,a.csd?.nnls?.sigma_N??null,a.csd?.nnls?.D_A??null,a.csd?.nnls?.D_V??null,a.csd?.nnls?.sigma_V??null
     ])
   ]);
 }
@@ -1464,6 +1473,8 @@ function invertCSD_NNLS(sArr,iArr,options={}){
   }
 
   const D_V=pV.reduce((s,v,j)=>s+v*D[j],0);
+  const varV=pV.reduce((s,v,j)=>s+v*(D[j]-D_V)**2,0);
+  const sigma_V=Math.sqrt(Math.max(0,varV));
   const D_A=1/pV.reduce((s,v,j)=>s+v/D[j],0); // exact <D^3>/<D^2>
   const D_N=pN.reduce((s,v,j)=>s+v*D[j],0);
   const varN=pN.reduce((s,v,j)=>s+v*(D[j]-D_N)**2,0);
@@ -1476,7 +1487,7 @@ function invertCSD_NNLS(sArr,iArr,options={}){
 
   return{
     D,fV,fN,gV,cdfV,cdfN,pV,pN,
-    D_N,sigma_N,D_A,D_V,
+    D_N,sigma_N,D_A,D_V,sigma_V,
     D10_V:quantileFromCDF(D,cdfV,0.10),D50_V:quantileFromCDF(D,cdfV,0.50),D90_V:quantileFromCDF(D,cdfV,0.90),
     D10_N:quantileFromCDF(D,cdfN,0.10),D50_N:quantileFromCDF(D,cdfN,0.50),D90_N:quantileFromCDF(D,cdfN,0.90),
     modes,bimodal:modes.length>=2,
@@ -1757,14 +1768,120 @@ function drawCSDCanvas(csd){
     `<span><i class="dot" style="background:#d97706"></i>⟨D⟩A = ⟨D³⟩/⟨D²⟩</span>`;
 }
 
-// ==================== RESULT HTML RENDERERS ====================
-function ptcoResultHTML(r,Demp,C){
-  const cls=r.snr>=15?'good':r.snr>=10?'warnc':'bad';
-  return `<div class="result"><b>PtCo empirical calculation (single-peak SNIP comparison)</b><table><tr><th>Metric</th><th>Result</th><th>Note</th></tr><tr><td>Peak 2θ / θ</td><td class="val">${fmt(r.peak,4)}° / ${fmt(r.peak/2,4)}°</td><td>PtCo L1₀ (220)</td></tr><tr><td>Net peak area (Gaussian approx)</td><td class="val">${fmt(r.area,2)}</td><td>SNIP baseline + Gaussian width approximation</td></tr><tr><td>FWHM / integral breadth</td><td class="val">${fmt(r.fwhm,4)}° / ${fmt(r.integralBreadth,4)}°</td><td>Kα₂ is not stripped; use corrected input</td></tr><tr><td>SNR</td><td class="val">${fmt(r.snr,1)}</td><td class="${cls}">${r.snr>=15?'reliable':r.snr>=10?'acceptable':'weak'}</td></tr><tr><td>Scherrer D (β from ${$('mode').value==='integral'?'integral breadth':'FWHM'})</td><td class="val">${fmt(r.D,2)} nm</td><td>${r.correction}</td></tr><tr><td>Empirical size D × C</td><td class="val">${fmt(Demp,2)} nm</td><td>C = ${fmt(C,2)} (pending TEM calibration)</td></tr></table><div class="small" style="margin-top:7px">Local SNIP baseline ${fmt(r.base,1)} counts · residual σ ${fmt(r.max/r.snr,1)} · Single-peak SNIP cannot separate overlapping (220)+(202); uncheck legacy SNIP to use 2-peak deconvolution.</div></div>`;
+// ==================== SIZE SUMMARY & RESULT HTML RENDERERS ====================
+function summarizeSizes(peaks,opts={}){
+  const valid=(peaks||[]).filter(p=>p&&Number.isFinite(p.D)&&p.D>0);
+  if(!valid.length)return null;
+  const n=valid.length;
+  const ds=valid.map(p=>p.D);
+  const sorted=[...ds].sort((a,b)=>a-b);
+  const min=sorted[0], max=sorted[n-1];
+  const median=n%2?sorted[(n-1)/2]:0.5*(sorted[n/2-1]+sorted[n/2]);
+  const mean=ds.reduce((a,b)=>a+b,0)/n;
+
+  const areas=valid.map(p=>Number.isFinite(p.area)&&p.area>0?p.area:0);
+  const sumA=areas.reduce((a,b)=>a+b,0);
+  const weights=sumA>0?areas.map(a=>a/sumA):valid.map(()=>1/n);
+  const wMean=valid.reduce((s,p,i)=>s+weights[i]*p.D,0);
+  const wVar=valid.reduce((s,p,i)=>s+weights[i]*(p.D-wMean)**2,0);
+  const wSd=Math.sqrt(Math.max(0,wVar));
+
+  let sd, basis, low, high, wLow, wHigh;
+  if(n>=2){
+    sd=Math.sqrt(ds.reduce((s,v)=>s+(v-mean)**2,0)/(n-1));
+    basis='inter-reflection dispersion (sample SD & area-weighted RMS deviation)';
+    low=Math.max(0,mean-sd); high=mean+sd;
+    wLow=Math.max(0,wMean-wSd); wHigh=wMean+wSd;
+  }else{
+    const p=valid[0];
+    const step=state.x.length>1?(state.x.at(-1)-state.x[0])/(state.x.length-1):0.02;
+    const snrRel=Number.isFinite(p.snr)&&p.snr>0?(1/p.snr):0;
+    const stepRel=Number.isFinite(p.fwhm)&&p.fwhm>0?(step/p.fwhm):0;
+    const relErr=Math.min(0.5,Math.sqrt(snrRel*snrRel+stepRel*stepRel));
+    sd=p.D*relErr;
+    basis='single-peak estimate from residual SNR & angular step (not multi-peak scatter)';
+    low=Math.max(0,p.D-sd); high=p.D+sd;
+    wLow=low; wHigh=high;
+  }
+  const rsdPct=mean>0?(sd/mean*100):0;
+  const C=Number.isFinite(opts.C)&&opts.C>0?opts.C:null;
+  return{
+    count:n,
+    mean_nm:mean,
+    sd_nm:sd,
+    weighted_mean_nm:wMean,
+    weighted_sd_nm:n>=2?wSd:sd,
+    median_nm:median,
+    min_nm:min,
+    max_nm:max,
+    rsd_pct:rsdPct,
+    interval_low_nm:low,
+    interval_high_nm:high,
+    weighted_low_nm:wLow,
+    weighted_high_nm:wHigh,
+    empirical_mean_nm:C!==null?wMean*C:null,
+    empirical_low_nm:C!==null?wLow*C:null,
+    empirical_high_nm:C!==null?wHigh*C:null,
+    wh_D_nm:Number.isFinite(opts.whD)?opts.whD:null,
+    basis
+  };
 }
 
-function ptcoDeconvHTML(d,C){
-  const p220=d.peaks[0], p202=d.peaks[1]||d.peaks[0];
+function summaryBoxHTML(s,opts={}){
+  if(!s)return '';
+  const zh=state.lang==='zh';
+  const title=zh
+    ?`最终汇总：平均晶粒粒径与偏差区间（共 ${s.count} 个峰）`
+    :`Final Summary: Average Crystallite Size & Deviation Range (n = ${s.count})`;
+  if(s.count===1){
+    const empItem=s.empirical_mean_nm!==null
+      ?`<div class="summary-item"><div class="sk">${zh?'经验校准粒径 D×C（估算区间）':'Empirical D×C (est. interval)'}</div><div class="sv">${fmt(s.empirical_mean_nm,2)} nm</div><div class="sn">${fmt(s.empirical_low_nm,2)} – ${fmt(s.empirical_high_nm,2)} nm</div></div>`:'';
+    return `<div class="summary-box">
+      <div class="s-title">📌 ${title}</div>
+      <div class="summary-grid">
+        <div class="summary-item"><div class="sk">${zh?'单峰晶粒粒径 D ± ΔD':'Single-peak Size D ± ΔD'}</div><div class="sv">${fmt(s.mean_nm,2)} ± ${fmt(s.sd_nm,2)} nm</div><div class="sn">RSD ≈ ${fmt(s.rsd_pct,1)}%</div></div>
+        <div class="summary-item"><div class="sk">${zh?'估算偏差区间 [D−ΔD, D+ΔD]':'Estimated Deviation Range'}</div><div class="sv">${fmt(s.interval_low_nm,2)} – ${fmt(s.interval_high_nm,2)} nm</div><div class="sn">${zh?'基于残差 SNR 与扫描步长估算；建议多峰统计或 CSD 拆解':'Estimated from residual SNR & step; use multi-peak or CSD for dispersion'}</div></div>
+        ${empItem}
+      </div>
+    </div>`;
+  }
+  const extraCard=s.wh_D_nm!==null
+    ?`<div class="summary-item"><div class="sk">${zh?'Williamson–Hall 综合粒径 D_WH':'Williamson–Hall Size D_WH'}</div><div class="sv">${fmt(s.wh_D_nm,2)} nm</div><div class="sn">${zh?'扣除各向同性微应变后（与各峰 Scherrer 均值对照）':'After isotropic microstrain separation'}</div></div>`
+    :(s.empirical_mean_nm!==null
+      ?`<div class="summary-item"><div class="sk">${zh?'经验校准平均粒径 D×C':'Empirical Weighted Mean D×C'}</div><div class="sv">${fmt(s.empirical_mean_nm,2)} nm</div><div class="sn">${zh?'偏差区间':'Range'}: ${fmt(s.empirical_low_nm,2)} – ${fmt(s.empirical_high_nm,2)} nm</div></div>`
+      :`<div class="summary-item"><div class="sk">${zh?'中位数 / 实测极差（Min–Max）':'Median / Observed Range (Min–Max)'}</div><div class="sv">${fmt(s.min_nm,2)} – ${fmt(s.max_nm,2)} nm</div><div class="sn">${zh?'中位数':'Median'} ${fmt(s.median_nm,2)} nm · RSD ${fmt(s.rsd_pct,1)}%</div></div>`);
+  return `<div class="summary-box">
+    <div class="s-title">📌 ${title}</div>
+    <div class="summary-grid">
+      <div class="summary-item"><div class="sk">${zh?'面积加权平均粒径 ± 偏差':'Area-weighted Mean ± Deviation'}</div><div class="sv">${fmt(s.weighted_mean_nm,2)} ± ${fmt(s.weighted_sd_nm,2)} nm</div><div class="sn">${zh?'偏差区间':'Interval'}: ${fmt(s.weighted_low_nm,2)} – ${fmt(s.weighted_high_nm,2)} nm</div></div>
+      <div class="summary-item"><div class="sk">${zh?'算术平均粒径 ± 标准差 (SD)':'Arithmetic Mean ± Sample SD'}</div><div class="sv">${fmt(s.mean_nm,2)} ± ${fmt(s.sd_nm,2)} nm</div><div class="sn">${zh?'±1σ 区间':'±1σ Range'}: ${fmt(s.interval_low_nm,2)} – ${fmt(s.interval_high_nm,2)} nm · ${zh?'极差':'Min–Max'} ${fmt(s.min_nm,2)}–${fmt(s.max_nm,2)} nm</div></div>
+      ${extraCard}
+    </div>
+  </div>`;
+}
+
+function csdSummaryHTML(csd){
+  if(!csd||!csd.nnls)return '';
+  const n=csd.nnls, zh=state.lang==='zh';
+  const vLo=Math.max(0,n.D_V-n.sigma_V), vHi=n.D_V+n.sigma_V;
+  const nLo=Math.max(0,n.D_N-n.sigma_N), nHi=n.D_N+n.sigma_N;
+  return `<div class="summary-box">
+    <div class="s-title">📌 ${zh?'最终汇总：CSD 平均粒径与分布偏差区间':'Final Summary: CSD Average Crystallite Size & Dispersion Intervals'}</div>
+    <div class="summary-grid">
+      <div class="summary-item"><div class="sk">${zh?'体积加权平均 ⟨D⟩V ± σV':'Volume-weighted ⟨D⟩V ± σV'}</div><div class="sv">${fmt(n.D_V,2)} ± ${fmt(n.sigma_V,2)} nm</div><div class="sn">${zh?'±1σ 区间':'±1σ'}: ${fmt(vLo,2)}–${fmt(vHi,2)} nm · D10–D90: <b>${fmt(n.D10_V,2)}–${fmt(n.D90_V,2)} nm</b></div></div>
+      <div class="summary-item"><div class="sk">${zh?'数量加权平均 ⟨D⟩N ± σN':'Number-weighted ⟨D⟩N ± σN'}</div><div class="sv">${fmt(n.D_N,2)} ± ${fmt(n.sigma_N,2)} nm</div><div class="sn">${zh?'±1σ 区间':'±1σ'}: ${fmt(nLo,2)}–${fmt(nHi,2)} nm · D10–D90: <b>${fmt(n.D10_N,2)}–${fmt(n.D90_N,2)} nm</b></div></div>
+      <div class="summary-item"><div class="sk">${zh?'面积加权平均 ⟨D⟩A & 中位粒径 D50':'Area-weighted ⟨D⟩A & Medians D50'}</div><div class="sv">${fmt(n.D_A,2)} nm</div><div class="sn">D50(V) = ${fmt(n.D50_V,2)} nm · D50(N) = ${fmt(n.D50_N,2)} nm</div></div>
+    </div>
+  </div>`;
+}
+
+function ptcoResultHTML(r,Demp,C,summary){
+  const cls=r.snr>=15?'good':r.snr>=10?'warnc':'bad';
+  return `<div class="result"><b>PtCo empirical calculation (single-peak SNIP comparison)</b><table><tr><th>Metric</th><th>Result</th><th>Note</th></tr><tr><td>Peak 2θ / θ</td><td class="val">${fmt(r.peak,4)}° / ${fmt(r.peak/2,4)}°</td><td>PtCo L1₀ (220)</td></tr><tr><td>Net peak area (Gaussian approx)</td><td class="val">${fmt(r.area,2)}</td><td>SNIP baseline + Gaussian width approximation</td></tr><tr><td>FWHM / integral breadth</td><td class="val">${fmt(r.fwhm,4)}° / ${fmt(r.integralBreadth,4)}°</td><td>Kα₂ is not stripped; use corrected input</td></tr><tr><td>SNR</td><td class="val">${fmt(r.snr,1)}</td><td class="${cls}">${r.snr>=15?'reliable':r.snr>=10?'acceptable':'weak'}</td></tr><tr><td>Scherrer D (β from ${$('mode').value==='integral'?'integral breadth':'FWHM'})</td><td class="val">${fmt(r.D,2)} nm</td><td>${r.correction}</td></tr><tr><td>Empirical size D × C</td><td class="val">${fmt(Demp,2)} nm</td><td>C = ${fmt(C,2)} (pending TEM calibration)</td></tr></table>${summaryBoxHTML(summary)}<div class="small" style="margin-top:7px">Local SNIP baseline ${fmt(r.base,1)} counts · residual σ ${fmt(r.max/r.snr,1)} · Single-peak SNIP cannot separate overlapping (220)+(202); uncheck legacy SNIP to use 2-peak deconvolution.</div></div>`;
+}
+
+function ptcoDeconvHTML(d,C,summary){
+  const p220=d.peaks[0];
   const Demp=p220.D*C;
   const latStr=d.lattice?`a = ${fmt(d.lattice.a,4)} Å · c = ${fmt(d.lattice.c,4)} Å · c/a = ${fmt(d.lattice.cOverA,4)}`:'Not inferred';
   return `<div class="result">
@@ -1779,16 +1896,17 @@ function ptcoDeconvHTML(d,C){
       <tr><th>Sub-peak</th><th>2θ (°)</th><th>Height</th><th>FWHM (°)</th><th>β (°)</th><th>η</th><th>Net Area Aₖ</th><th>Area %</th><th>Scherrer D (nm)</th></tr>
       ${d.peaks.map(p=>`<tr><td><b>${escapeHTML(p.label)}</b></td><td class="val">${fmt(p.peak,3)}</td><td>${fmt(p.height,1)}</td><td>${fmt(p.fwhm,4)}</td><td>${fmt(p.integralBreadth,4)}</td><td>${fmt(p.eta,3)}</td><td class="val">${fmt(p.area,2)}</td><td>${fmt(p.areaFraction*100,1)}%</td><td class="val">${fmt(p.D,2)}</td></tr>`).join('')}
     </table>
+    ${summaryBoxHTML(summary)}
     <div class="small" style="margin-top:8px"><b>Area comparison:</b> Total analytic fitted ΣAₖ = <b>${fmt(d.totalFittedArea,2)}</b> · Fitted-baseline numerical trapz = <b>${fmt(d.fittedBaselineNumericalArea,2)}</b> · Traditional endpoint-baseline trapz = <b>${fmt(d.endpointBaselineArea,2)}</b> (${fmt(d.endpointDeltaPct,1)}% vs ΣAₖ). C = ${fmt(C,2)} · ${p220.correction}.</div>
   </div>`;
 }
 
-function resultHTML(r){
+function resultHTML(r,summary){
   const cls=r.snr>=15?'good':r.snr>=10?'warnc':'bad';
-  return `<div class="result"><b>Calculation result</b><table><tr><th>Metric</th><th>Result</th><th>Assessment</th></tr><tr><td>Peak 2θ / θ</td><td class="val">${fmt(r.peak,4)}° / ${fmt(r.peak/2,4)}°</td><td>θ=2θ/2</td></tr><tr><td>Net peak area</td><td class="val">${fmt(r.area,2)}</td><td>${$('calcMode').value==='standard'?'Endpoint baseline + trapezoidal integration':'SNIP baseline + Gaussian width approximation'}</td></tr><tr><td>FWHM / integral breadth</td><td class="val">${fmt(r.fwhm,4)}° / ${fmt(r.integralBreadth,4)}°</td><td>Kα₂ is not stripped; use corrected input</td></tr><tr><td>βsample</td><td class="val">${fmt(r.correctedDeg,4)}° = ${fmt(r.correctedDeg*Math.PI/180,6)} rad</td><td>${r.correction}</td></tr><tr><td>SNR</td><td class="val">${fmt(r.snr,1)}</td><td class="${cls}">${r.snr>=15?'reliable':r.snr>=10?'acceptable':'weak; consider (111)'}</td></tr><tr><td>Scherrer D</td><td class="val">${fmt(r.D,2)} nm</td><td>Coherently diffracting domain size; not equal to particle size</td></tr></table><div class="small" style="margin-top:7px">Baseline avg ${fmt(r.base,1)} counts · residual σ ${fmt(r.max/r.snr,1)} · Input doublet correction must be performed before analysis</div></div>`;
+  return `<div class="result"><b>Calculation result</b><table><tr><th>Metric</th><th>Result</th><th>Assessment</th></tr><tr><td>Peak 2θ / θ</td><td class="val">${fmt(r.peak,4)}° / ${fmt(r.peak/2,4)}°</td><td>θ=2θ/2</td></tr><tr><td>Net peak area</td><td class="val">${fmt(r.area,2)}</td><td>${$('calcMode').value==='standard'?'Endpoint baseline + trapezoidal integration':'SNIP baseline + Gaussian width approximation'}</td></tr><tr><td>FWHM / integral breadth</td><td class="val">${fmt(r.fwhm,4)}° / ${fmt(r.integralBreadth,4)}°</td><td>Kα₂ is not stripped; use corrected input</td></tr><tr><td>βsample</td><td class="val">${fmt(r.correctedDeg,4)}° = ${fmt(r.correctedDeg*Math.PI/180,6)} rad</td><td>${r.correction}</td></tr><tr><td>SNR</td><td class="val">${fmt(r.snr,1)}</td><td class="${cls}">${r.snr>=15?'reliable':r.snr>=10?'acceptable':'weak; consider (111)'}</td></tr><tr><td>Scherrer D</td><td class="val">${fmt(r.D,2)} nm</td><td>Coherently diffracting domain size; not equal to particle size</td></tr></table>${summaryBoxHTML(summary)}<div class="small" style="margin-top:7px">Baseline avg ${fmt(r.base,1)} counts · residual σ ${fmt(r.max/r.snr,1)} · Input doublet correction must be performed before analysis</div></div>`;
 }
 
-function deconvResultHTML(d){
+function deconvResultHTML(d,summary){
   const latHtml=d.lattice
     ?`<div class="kpi"><div class="k">Tetragonal Lattice (${d.lattice.pair})</div><div class="v" style="font-size:13.5px">a = ${fmt(d.lattice.a,4)} Å · c = ${fmt(d.lattice.c,4)} Å · c/a = ${fmt(d.lattice.cOverA,4)}</div></div>`:'';
   return `<div class="result">
@@ -1804,6 +1922,7 @@ function deconvResultHTML(d){
       <tr><th>Sub-peak</th><th>2θ (°)</th><th>Height</th><th>FWHM (°)</th><th>β (°)</th><th>η</th><th>Net Area Aₖ</th><th>Vol/Area %</th><th>Scherrer Dₖ (nm)</th></tr>
       ${d.peaks.map((p,i)=>`<tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${SUB_COLORS[i%SUB_COLORS.length]};margin-right:5px"></span><b>${escapeHTML(p.label)}</b></td><td class="val">${fmt(p.peak,3)}</td><td>${fmt(p.height,1)}</td><td>${fmt(p.fwhm,4)}</td><td>${fmt(p.integralBreadth,4)}</td><td>${fmt(p.eta,3)}</td><td class="val">${fmt(p.area,2)}</td><td>${fmt(p.areaFraction*100,1)}%</td><td class="val">${fmt(p.D,2)}</td></tr>`).join('')}
     </table>
+    ${summaryBoxHTML(summary)}
     <div class="small" style="margin-top:7px">Window: ${fmt(d.window[0],2)}°–${fmt(d.window[1],2)}° · Width mode: ${$('mode').value} · ${d.peaks[0]?.correction||''} · Analytic ΣAₖ integrates full Pseudo-Voigt tails, preventing endpoint-chord truncation on broad overlapping reflections.</div>
   </div>`;
 }
@@ -1818,7 +1937,7 @@ function csdResultHTML(csd){
     <div class="grid2">
       <div class="kpi"><div class="k">Number-weighted ⟨D⟩N ± σN (NNLS)</div><div class="v">${fmt(n.D_N,2)} ± ${fmt(n.sigma_N,2)} nm</div></div>
       <div class="kpi"><div class="k">Area-weighted ⟨D⟩A = ⟨D³⟩/⟨D²⟩</div><div class="v">${fmt(n.D_A,2)} nm</div></div>
-      <div class="kpi"><div class="k">Volume-weighted ⟨D⟩V</div><div class="v">${fmt(n.D_V,2)} nm</div></div>
+      <div class="kpi"><div class="k">Volume-weighted ⟨D⟩V ± σV</div><div class="v">${fmt(n.D_V,2)} ± ${fmt(n.sigma_V,2)} nm</div></div>
       <div class="kpi"><div class="k">Volume D10 / D50 / D90 (nm)</div><div class="v" style="font-size:14px">${fmt(n.D10_V,2)} / ${fmt(n.D50_V,2)} / ${fmt(n.D90_V,2)}</div></div>
     </div>
     <table>
@@ -1827,7 +1946,7 @@ function csdResultHTML(csd){
         <td><b>Tikhonov-NNLS (Spherical I_S)</b></td>
         <td class="val">${fmt(n.D_N,2)} ± ${fmt(n.sigma_N,2)}</td>
         <td class="val">${fmt(n.D_A,2)}</td>
-        <td class="val">${fmt(n.D_V,2)}</td>
+        <td class="val">${fmt(n.D_V,2)} ± ${fmt(n.sigma_V,2)}</td>
         <td>${fmt(n.D10_N,2)} / ${fmt(n.D50_N,2)} / ${fmt(n.D90_N,2)}</td>
         <td>R² = ${fmt(n.r2,4)} · λ = ${n.regLambda.toExponential(1)}</td>
       </tr>
@@ -1840,6 +1959,7 @@ function csdResultHTML(csd){
         <td class="${kb.suppressed?'warnc':'good'}">${kb.suppressed?escapeHTML(kb.reason):`D₀=${fmt(kb.D0,2)} nm, σ=${fmt(kb.sigma,3)}, ⟨L⟩V/⟨L⟩A=${fmt(kb.ratioLV_LA,3)}`}</td>
       </tr>
     </table>
+    ${csdSummaryHTML(csd)}
     <div class="small" style="margin-top:7px">Assumes spherical crystallites with negligible microstrain in the isolated peak; microstrain or stacking faults can broaden tails and mimic smaller crystallites.</div>
   </div>`;
 }
@@ -1920,8 +2040,9 @@ function executeDeconv(){
       return{label:inp[0].value||'Peak',mu,fwhm,shift:Number.isFinite(shift)&&shift>0?shift:1.5};
     });
     const d=fitMultiPeakLM(xs,ys,seeds,{shape:$('deconvShape').value,baseline:$('deconvBaseline').value});
+    const summary=summarizeSizes(d.peaks);
     state.lastDeconv=d;
-    $('deconvResult').innerHTML=deconvResultHTML(d);
+    $('deconvResult').innerHTML=deconvResultHTML(d,summary);
     drawDeconvCanvas('deconvChart','deconvLegend',d);
     $('csdPanel').classList.remove('hidden');
     populateCSDTargets(d);
@@ -1936,6 +2057,7 @@ function executeDeconv(){
         endpoint_delta_pct:d.endpointDeltaPct
       },
       lattice:d.lattice,
+      summary,
       peaks:d.peaks.map(({curve,...rest})=>rest),
       units:{angle:'degree 2theta',size:'nm',width:'degree 2theta',lattice:'angstrom'}
     });
@@ -1956,7 +2078,7 @@ function executeCSD(){
         target:csd.target,center_2theta_deg:csd.centerDeg,s0_inv_nm:csd.s0,
         nnls:{
           D:csd.nnls.D,fV:csd.nnls.fV,fN:csd.nnls.fN,cdfV:csd.nnls.cdfV,cdfN:csd.nnls.cdfN,
-          D_N:csd.nnls.D_N,sigma_N:csd.nnls.sigma_N,D_A:csd.nnls.D_A,D_V:csd.nnls.D_V,
+          D_N:csd.nnls.D_N,sigma_N:csd.nnls.sigma_N,D_A:csd.nnls.D_A,D_V:csd.nnls.D_V,sigma_V:csd.nnls.sigma_V,
           D10_V:csd.nnls.D10_V,D50_V:csd.nnls.D50_V,D90_V:csd.nnls.D90_V,
           D10_N:csd.nnls.D10_N,D50_N:csd.nnls.D50_N,D90_N:csd.nnls.D90_N,
           modes:csd.nnls.modes,bimodal:csd.nnls.bimodal,reg_lambda:csd.nnls.regLambda,r2:csd.nnls.r2
@@ -2116,19 +2238,23 @@ $('calc').onclick=()=>{
       if(!Number.isFinite(C)||C<=0)throw Error('Calibration factor must be finite and positive');
       if($('ptcoSingleSnip').checked){
         const res=analyzeSNIP(l,r);
-        $('singleResult').innerHTML=ptcoResultHTML(res,res.D*C,C);
-        saveResult({method:'ptco_snip',settings:analysisSettings(),peaks:[{label:'(220)',...res,calibration_factor:C,empirical_size_nm:res.D*C}],units:{angle:'degree 2theta',size:'nm',width:'degree 2theta'}});
+        const pk={label:'(220)',...res,calibration_factor:C,empirical_size_nm:res.D*C};
+        const summary=summarizeSizes([pk],{C});
+        $('singleResult').innerHTML=ptcoResultHTML(res,res.D*C,C,summary);
+        saveResult({method:'ptco_snip',settings:analysisSettings(),summary,peaks:[pk],units:{angle:'degree 2theta',size:'nm',width:'degree 2theta'}});
       }else{
         const ia=idxRange(l,r);if(ia.length<8)throw Error('Too few data points in PtCo (220)+(202) region');
         const xs=ia.map(i=>state.x[i]), ys=ia.map(i=>state.y[i]);
         const d=fitMultiPeakLM(xs,ys,[{label:'(220)',mu:68.45,fwhm:1.2,shift:1.5},{label:'(202)',mu:70.46,fwhm:1.2,shift:1.5}],{shape:'pvoigt',baseline:'linear'});
-        $('singleResult').innerHTML=ptcoDeconvHTML(d,C);
+        const summary=summarizeSizes(d.peaks,{C});
+        $('singleResult').innerHTML=ptcoDeconvHTML(d,C,summary);
         drawDeconvCanvas('singleDeconvChart',null,d);
         saveResult({
           method:'ptco_deconv',
           settings:analysisSettings(),
           deconvolution:{window:d.window,r2:d.r2,rwp:d.rwp,rmse:d.rmse,total_fitted_area:d.totalFittedArea,fitted_baseline_numerical_area:d.fittedBaselineNumericalArea,endpoint_baseline_area:d.endpointBaselineArea,endpoint_delta_pct:d.endpointDeltaPct},
           lattice:d.lattice,
+          summary,
           peaks:d.peaks.map(({curve,...pk})=>({...pk,calibration_factor:C,empirical_size_nm:pk.D*C})),
           units:{angle:'degree 2theta',size:'nm',width:'degree 2theta',lattice:'angstrom'}
         });
@@ -2136,8 +2262,10 @@ $('calc').onclick=()=>{
       return;
     }
     const res=m==='standard'?analyze(l,r):analyzeSNIP(l,r);
-    $('singleResult').innerHTML=resultHTML(res);
-    saveResult({method:m,settings:analysisSettings(),peaks:[{label:'selected peak',...res,calibration_factor:1,empirical_size_nm:res.D}],units:{angle:'degree 2theta',size:'nm',width:'degree 2theta'}});
+    const pk={label:'selected peak',...res,calibration_factor:1,empirical_size_nm:res.D};
+    const summary=summarizeSizes([pk]);
+    $('singleResult').innerHTML=resultHTML(res,summary);
+    saveResult({method:m,settings:analysisSettings(),summary,peaks:[pk],units:{angle:'degree 2theta',size:'nm',width:'degree 2theta'}});
   }catch(e){invalidate();msg(e.message,'err');}
 };
 
@@ -2204,12 +2332,13 @@ $('multiCalc').onclick=()=>{
       }
     }
     const wh=williamsonHall(peaks,+$('K').value,+$('lambda').value);
+    const summary=summarizeSizes(peaks,{whD:wh.D_nm});
     const latLine=lattice?`<p class="small">Inferred tetragonal lattice (${lattice.pair}): <b>a = ${fmt(lattice.a,4)} Å</b> · <b>c = ${fmt(lattice.c,4)} Å</b> · <b>c/a = ${fmt(lattice.cOverA,4)}</b></p>`:'';
     $('multiResult').innerHTML='<div class="result"><b>Multi-peak size results</b><table><tr><th>Peak</th><th>Position</th><th>FWHM</th><th>β (°)</th><th>SNR</th><th>D (nm)</th></tr>'+
       peaks.map(r=>`<tr><td>${escapeHTML(r.label)}</td><td>${fmt(r.peak,3)}°</td><td>${fmt(r.fwhm,3)}°</td><td>${fmt(r.integralBreadth,3)}°</td><td>${fmt(r.snr,1)}</td><td class="val">${fmt(r.D,2)}</td></tr>`).join('')+
-      `</table><p><b>Williamson–Hall (${peaks.length} peaks):</b> ${wh.reason}. ${wh.D_nm===null?'':`D = <b>${fmt(wh.D_nm,2)} nm</b> · strain ε = <b>${fmt(wh.strain,6)}</b> · R² = <b>${fmt(wh.r2,4)}</b>`}</p>${latLine}<p class="small">Isotropic uniform-deformation approximation: β cosθ = Kλ/D + 4ε sinθ. Use at least three distinct clean reflections of one phase, consistent widths and instrumental corrections.</p></div>`;
+      `</table><p><b>Williamson–Hall (${peaks.length} peaks):</b> ${wh.reason}. ${wh.D_nm===null?'':`D = <b>${fmt(wh.D_nm,2)} nm</b> · strain ε = <b>${fmt(wh.strain,6)}</b> · R² = <b>${fmt(wh.r2,4)}</b>`}</p>${latLine}${summaryBoxHTML(summary)}<p class="small">Isotropic uniform-deformation approximation: β cosθ = Kλ/D + 4ε sinθ. Use at least three distinct clean reflections of one phase, consistent widths and instrumental corrections.</p></div>`;
     if(wh.points)drawWH(wh);
-    saveResult({method:'multi_peak',settings:analysisSettings(),peaks,williamson_hall:wh,lattice,units:{angle:'degree 2theta',size:'nm',strain:'dimensionless',width:'degree 2theta',lattice:'angstrom'}});
+    saveResult({method:'multi_peak',settings:analysisSettings(),summary,peaks,williamson_hall:wh,lattice,units:{angle:'degree 2theta',size:'nm',strain:'dimensionless',width:'degree 2theta',lattice:'angstrom'}});
   }catch(e){invalidate();msg(e.message,'err');}
 };
 
