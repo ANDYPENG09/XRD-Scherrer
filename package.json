@@ -1,6 +1,6 @@
 {
   "name": "xrd-scherrer-tests",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "scripts": {
     "test": "node tests/test_ui.cjs"
