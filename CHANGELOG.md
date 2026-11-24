@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.2.2 — 2026-11-24
+
+- Fix `(111)` crystallite size overestimation in multi-peak and single-peak analyses:
+  - Add `1-peak LM (Pseudo-Voigt)` (`analyzeLM1`) mode to Tab ③ (`#peakRows`) and `Pseudo-Voigt LM (joint linear baseline)` to Tab ① (`#calcMode`) so isolated Voigt/Lorentzian peaks are fitted with a joint linear baseline instead of endpoint chords that truncate tails and inflate `D`.
+  - Default `(111)` in `+ Load PtCo L1₀ (5 peaks)` (`35.5°–44.5°`) to `1-peak LM` (and adjust `(200)+(002)` to `43.5°–51.5°` to stay clear of the `53.6°` `(201)` superlattice tail), ensuring all 5 reflections use one consistent Pseudo-Voigt model.
+  - Fix the built-in synthetic `demo()` pattern (`PEAKS`) where `(111)` previously had an artificially narrow hardcoded width (`6.01 nm` vs `4.26–4.81 nm` on other reflections, causing W–H `R² = 0.19`); all L1₀ reflections in `demo()` are now synthesized from a physically consistent `D = 4.6 nm, ε = 0.0015, η = 0.25` Pseudo-Voigt model (`D(111) ≈ 4.32 nm`, W–H `R² > 0.91`).
+  - Add an automatic bilingual diagnostic note in Tab ③ whenever `(111)` still exceeds the median of other reflections by >25% on measured data (guiding users toward bimodal CSD or anisotropic strain review).
+
 ## v1.2.1 — 2026-11-24
 
 - Add a prominent bilingual **Final Summary: Average Crystallite Size & Deviation Range** box at the bottom of every analysis panel (Tab ① single peak & PtCo `(220)+(202)`, Tab ② multi-peak deconvolution & CSD, Tab ③ multi-peak + Williamson–Hall).
