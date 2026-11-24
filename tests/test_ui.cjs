@@ -42,7 +42,7 @@ evalJS("$('inst').value=0;$('broadeningModel').value='gaussian';$('mode').value=
 evalJS("$('left').value=38;$('right').value=42;");
 doc.getElementById('calc').click();
 assert(evalJS('state.analysis.peaks[0].D')>0,'Single peak calc produces D>0');
-assert.equal(evalJS('state.analysis.tool_version'),'1.2.1','Tool version is 1.2.1');
+assert.equal(evalJS('state.analysis.tool_version'),'1.2.2','Tool version is 1.2.2');
 assert(evalJS('state.analysis.summary && state.analysis.summary.count===1 && state.analysis.summary.interval_low_nm<=state.analysis.summary.mean_nm && state.analysis.summary.interval_high_nm>=state.analysis.summary.mean_nm'),'Single-peak summary provides mean and deviation interval');
 
 const wh=evalJS('williamsonHall([40,60,80].map(peak=>{const theta=peak*Math.PI/360;return{peak,correctedDeg:(.89*.1540598/50+.001*4*Math.sin(theta))/Math.cos(theta)*180/Math.PI};}),.89,1.540598)');
@@ -61,6 +61,23 @@ assert(Math.abs(sumCheck.weighted_mean_nm-6)<1e-12,'Area-weighted mean = 6');
 assert(Math.abs(sumCheck.weighted_sd_nm-Math.sqrt(1.6))<1e-12,'Area-weighted RMS deviation');
 assert.equal(sumCheck.min_nm,4);assert.equal(sumCheck.max_nm,8);
 assert.equal(sumCheck.interval_low_nm,4);assert.equal(sumCheck.interval_high_nm,8);
+
+// 2c. Verify 1-peak LM eliminates endpoint-baseline D(111) overestimation on Voigt-tailed (111)
+const voigt111Check=evalJS(`(()=>{
+  const lam=1.540598, pos=40.304, th=pos*Math.PI/360, eta=0.5;
+  const betaDeg=((0.89*(lam/10)/4.5 + 4*0.002*Math.sin(th))/Math.cos(th))*(180/Math.PI);
+  const fwhm=betaDeg/((1-eta)*SQRT_PI_4LN2+eta*Math.PI/2);
+  const trueDApp=0.89*lam/((betaDeg*Math.PI/180)*Math.cos(th))/10;
+  state.x=[];state.y=[];
+  for(let i=0;i<=600;i++){const x=34+i*12/600;state.x.push(x);state.y.push(40-0.1*(x-34)+evalPV(x,380/betaDeg,pos,fwhm,eta));}
+  $('mode').value='integral';
+  const ep=analyze(36.5,44.0);
+  const lm=analyzeLM1(35.5,44.5,'(111)').peakObj;
+  $('mode').value='fwhm';
+  return{trueDApp,epD:ep.D,lmD:lm.D};
+})()`);
+assert(voigt111Check.epD>voigt111Check.trueDApp*1.10,'Endpoint baseline overestimates Voigt (111) size by >10%');
+assert(Math.abs(voigt111Check.lmD-voigt111Check.trueDApp)/voigt111Check.trueDApp<0.02,'1-peak LM recovers Voigt (111) size within 2%');
 
 // 3. (220)+(202) overlapping doublet deconvolution: area recovery, endpoint underestimation & tetragonal c/a
 const deconvCheck=evalJS(`(()=>{
@@ -125,7 +142,7 @@ const kbVoigt=evalJS('krillBirringerCSD(40.3, 0.8, pvIntegralBreadth(0.8, 0.75),
 assert.equal(kbVoigt.suppressed,false,'Krill-Birringer returns lognormal parameters on Lorentzian-rich Voigt');
 assert(kbVoigt.D_V>kbVoigt.D_A&&kbVoigt.D_A>kbVoigt.D_N&&kbVoigt.sigma>0);
 
-// 7. UI end-to-end: Tab 1 PtCo (220)+(202) deconv, Tab 2 Deconv+CSD & CSD CSV, Tab 3 PtCo L10 5-peak W-H, exports & invalidation
+// 7. UI end-to-end: Tab 1 PtCo (220)+(202) deconv & LM single peak, Tab 2 Deconv+CSD & CSD CSV, Tab 3 PtCo L10 5-peak W-H, exports & invalidation
 doc.getElementById('demoBimodalBtn').click();
 doc.getElementById('calcMode').value='ptco';
 doc.getElementById('calcMode').dispatchEvent(new w.Event('change',{bubbles:true}));
@@ -138,7 +155,17 @@ assert(evalJS('state.analysis.summary.count===2 && state.analysis.summary.weight
 assert(doc.getElementById('singleResult').innerHTML.includes('summary-box'),'PtCo deconv renders final summary box');
 assert(evalJS('state.analysis.lattice.cOverA')>0.9&&evalJS('state.analysis.lattice.cOverA')<1.0);
 
+// Tab 1: calcMode=lm on (111)
+doc.getElementById('demo').click();
+doc.getElementById('calcMode').value='lm';
+doc.getElementById('calcMode').dispatchEvent(new w.Event('change',{bubbles:true}));
+doc.getElementById('left').value='35.5';doc.getElementById('right').value='44.5';
+doc.getElementById('calc').click();
+assert.equal(evalJS('state.analysis.method'),'lm');
+assert(evalJS('state.analysis.peaks[0].D')>3&&evalJS('state.analysis.peaks[0].D')<5.5,'Tab 1 LM (111) size is physically consistent');
+
 // Tab 2: Bimodal (111) preset -> Deconv -> Composite CSD -> Export CSD CSV
+doc.getElementById('demoBimodalBtn').click();
 doc.getElementById('calcMode').value='standard';
 doc.getElementById('calcMode').dispatchEvent(new w.Event('change',{bubbles:true}));
 doc.getElementById('deconvTab').click();
@@ -159,14 +186,17 @@ doc.getElementById('exportJSON').click();
 doc.getElementById('exportCSV').click();
 doc.getElementById('exportCSDCSV').click();
 
-// Tab 3: PtCo L10 5-peak W-H
+// Tab 3: PtCo L10 5-peak W-H (consistent (111) size via 1-peak LM & high W-H R2)
 doc.getElementById('demo').click();
+doc.getElementById('mode').value='fwhm';
 doc.getElementById('multiTab').click();
 doc.getElementById('ptcoL10').click();
 doc.getElementById('multiCalc').click();
 assert.equal(evalJS('state.analysis.method'),'multi_peak');
 assert.equal(evalJS('state.analysis.peaks.length'),5,'PtCo L10 preset extracts 5 reflections for W-H');
 assert.equal(evalJS('state.analysis.summary.count'),5,'Multi-peak summary aggregates all 5 peaks');
+assert(evalJS('state.analysis.peaks[0].D < 5.0 && state.analysis.peaks[0].D > 3.8'),'(111) size is consistent with other L10 reflections');
+assert(evalJS('state.analysis.williamson_hall.r2 > 0.85'),'PtCo L10 demo W-H R2 > 0.85');
 assert(evalJS('state.analysis.summary.min_nm<=state.analysis.summary.mean_nm && state.analysis.summary.mean_nm<=state.analysis.summary.max_nm'));
 assert(doc.getElementById('multiResult').innerHTML.includes('summary-box'),'Multi-peak renders final summary box');
 assert(evalJS('state.analysis.lattice.pair')==='(200)+(002)'||evalJS('state.analysis.lattice.pair')==='(220)+(202)');
@@ -183,5 +213,5 @@ assert.equal(evalJS('state.analysis'),null,'Input edit invalidates state.analysi
 assert.equal(doc.getElementById('exportCSV').disabled,true,'Input edit disables exportCSV');
 assert.equal(doc.getElementById('exportCSDCSV').disabled,true,'Input edit disables exportCSDCSV');
 
-console.log('XRD-Scherrer v1.2.1: parsing, analytic Scherrer, size summaries, (220)+(202) deconvolution, lattice c/a, NNLS lognormal & bimodal CSD, Krill-Birringer suppression, L10 5-peak W-H, exports and invalidation passed');
+console.log('XRD-Scherrer v1.2.2: parsing, analytic Scherrer, (111) 1-peak LM consistency, size summaries, (220)+(202) deconvolution, lattice c/a, NNLS lognormal & bimodal CSD, Krill-Birringer suppression, L10 5-peak W-H, exports and invalidation passed');
 dom.window.close();

@@ -103,7 +103,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding-top:10px}
     <button id="langToggle" class="lang-btn" type="button">中文 / EN</button>
   </div>
   <div class="badges">
-    <span class="badge">v1.2.1</span>
+    <span class="badge">v1.2.2</span>
     <span class="badge" data-i18n="bZero">✓ Zero dependencies</span>
     <span class="badge" data-i18n="bDeconv">✓ Pseudo-Voigt LM Deconvolution</span>
     <span class="badge" data-i18n="bCSD">✓ Spherical NNLS + Krill–Birringer CSD</span>
@@ -154,6 +154,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding-top:10px}
     <div class="field"><label data-i18n="lblCalcMode">Calculation mode</label>
       <select id="calcMode">
         <option value="standard">Standard Scherrer (endpoint baseline)</option>
+        <option value="lm">Pseudo-Voigt LM (joint linear baseline)</option>
         <option value="optimized">Optimized Scherrer (SNIP + Gaussian width approx)</option>
         <option value="ptco">PtCo empirical (220)+(202) deconvolution</option>
       </select>
@@ -301,7 +302,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding-top:10px}
   </div>
 </section>
 
-<footer><a href="https://andypeng09.github.io/xrd-toolkit/">XRD Toolkit</a> · XRD-Scherrer v1.2.1 · Single-file HTML · MIT License · Author: Yu Peng (ANDYPENG09)</footer>
+<footer><a href="https://andypeng09.github.io/xrd-toolkit/">XRD Toolkit</a> · XRD-Scherrer v1.2.2 · Single-file HTML · MIT License · Author: Yu Peng (ANDYPENG09)</footer>
 </div>
 
 <script>
@@ -310,7 +311,7 @@ const $=id=>document.getElementById(id);
 const state={x:[],y:[],name:'Demo data',fmt:'DEMO',zoom:null,analysis:null,lastDeconv:null,lang:'en',activeTab:'single'};
 const REGIONS=[];
 const TOOL_ID='XRD-Scherrer';
-const TOOL_VERSION='1.2.1';
+const TOOL_VERSION='1.2.2';
 const REFERENCES={
   scherrer:'Scherrer (1918); Cullity & Stock, Elements of X-Ray Diffraction, 3rd ed.',
   wh:'Williamson & Hall, Acta Metallurgica 1 (1953), 22-31',
@@ -544,12 +545,23 @@ function lognormalSphereWeights(D0,sigma,n=45){
   return pts.map(([D,w])=>[D,w/sum]);
 }
 
-const PEAKS=[[23.96,25.0,0.7],[33.34,53.1,0.85],[40.304,380.0,0.5945],[47.144,146.1,0.85],[49.032,119.6,0.85],[53.6,40.0,0.8],[68.45,120.0,0.934],[70.46,70.0,0.85],[78.5,45.0,0.85],[83.5,22.0,0.8],[86.3,35.0,0.85],[89.2,60.0,0.85]];
+// Physically consistent PtCo L1₀ reflection table (positions match P4/mmm a≈3.852 Å, c≈3.713 Å, c/a≈0.964; D=4.6 nm, ε=0.0015, η=0.25)
+const PEAKS=[[23.96,25.0],[33.34,53.1],[40.304,380.0],[47.144,146.1],[49.032,119.6],[53.6,40.0],[68.45,120.0],[70.46,70.0],[78.5,45.0],[83.5,22.0],[86.3,35.0],[89.2,60.0]];
 function demo(){
   invalidate();
   const x=[],y=[];let seed=20260604;
   const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff*2-1;};
-  const peakAt=a=>{let z=40+6*Math.sin(a*0.22)+rnd()*2.5;for(const [p,h,w] of PEAKS)z+=h*Math.exp(-0.5*((a-p)/w)**2);return z;};
+  const lamNm=0.1540598, D_true=4.6, eps_true=0.0015, eta_true=0.25;
+  const peakSpecs=PEAKS.map(([p,h])=>{
+    const th=p*Math.PI/360;
+    const fwhm=((0.89*lamNm/D_true + 4*eps_true*Math.sin(th))/Math.cos(th))*(180/Math.PI);
+    return[p,h,fwhm];
+  });
+  const peakAt=a=>{
+    let z=40+4*Math.sin(a*0.18)+rnd()*1.8;
+    for(const [p,h,fwhm] of peakSpecs)z+=evalPV(a,h,p,fwhm,eta_true);
+    return z;
+  };
   for(let i=0;i<=3264;i++){const a=10+i*80/3264;x.push(a);y.push(peakAt(a));}
   state.x=x;state.y=y;state.name='Synthetic PtCo L1₀ demo data';state.fmt='DEMO';
   onLoaded();
@@ -2141,10 +2153,22 @@ function drawWH(r){
   ctx.fillText(ymin.toFixed(5),2,H-40);ctx.fillText(ymax.toFixed(5),2,35);
 }
 
+function analyzeLM1(a,b,label='Peak'){
+  if(!Number.isFinite(a)||!Number.isFinite(b)||b<=a)throw Error('Peak-region bounds must be finite, with right > left');
+  if(!state.x.length)throw Error('Import XRD data first');
+  const ia=idxRange(a,b);if(ia.length<8)throw Error('Too few data points in the peak region (need at least 8 for LM fit)');
+  const xs=ia.map(i=>state.x[i]), ys=ia.map(i=>state.y[i]);
+  let bi=0;for(let i=1;i<ys.length;i++)if(ys[i]>ys[bi])bi=i;
+  const fwhmEst=Math.min(3.0,Math.max(0.4,(b-a)*0.22));
+  const d=fitMultiPeakLM(xs,ys,[{label,mu:xs[bi],fwhm:fwhmEst,shift:Math.min(2.0,(b-a)*0.35)}],{shape:'pvoigt',baseline:'linear'});
+  const {curve,...pk}=d.peaks[0];
+  return{peakObj:pk,deconv:d};
+}
+
 function addRow(label='Peak',l=39,r=43.5,rowMode='single'){
   const tr=document.createElement('tr');
-  tr.innerHTML=`<td><input value="${escapeHTML(label)}" style="min-width:100px"></td><td><input type="number" value="${l}" step=".05"></td><td><input type="number" value="${r}" step=".05"></td><td><select class="row-mode"><option value="single">Single peak</option><option value="doublet">2-peak deconv</option></select></td><td><button class="remove" type="button">Remove</button></td>`;
-  tr.querySelector('.row-mode').value=rowMode==='doublet'?'doublet':'single';
+  tr.innerHTML=`<td><input value="${escapeHTML(label)}" style="min-width:100px"></td><td><input type="number" value="${l}" step=".05"></td><td><input type="number" value="${r}" step=".05"></td><td><select class="row-mode"><option value="lm1">1-peak LM (Pseudo-Voigt)</option><option value="single">Single peak (endpoint/SNIP)</option><option value="doublet">2-peak deconv</option></select></td><td><button class="remove" type="button">Remove</button></td>`;
+  tr.querySelector('.row-mode').value=(rowMode==='doublet'||rowMode==='lm1')?rowMode:'single';
   tr.querySelector('.remove').onclick=()=>{invalidate();tr.remove();syncRegions();draw();};
   $('peakRows').appendChild(tr);
 }
@@ -2210,8 +2234,8 @@ $('auto').onclick=()=>{
   invalidate();
   let i=state.y.reduce((best,v,j)=>v>state.y[best]?j:best,0);
   let p=state.x[i];
-  $('left').value=Math.max(state.x[0],p-3).toFixed(2);
-  $('right').value=Math.min(state.x.at(-1),p+3).toFixed(2);
+  $('left').value=Math.max(state.x[0],p-4).toFixed(2);
+  $('right').value=Math.min(state.x.at(-1),p+4).toFixed(2);
   syncRegions();draw();
   msg('Peak region centered on the strongest peak','ok');
 };
@@ -2224,6 +2248,8 @@ $('calcMode').onchange=()=>{
     $('left').value=64;$('right').value=75;$('mode').value='integral';
     syncRegions();draw();
     msg('Switched to PtCo empirical mode: (220)+(202) deconvolution in 64°–75°, width set to integral breadth','ok');
+  }else if(v==='lm'){
+    msg('Switched to Pseudo-Voigt LM mode (joint linear baseline, avoids endpoint-chord tail truncation)','ok');
   }else{
     msg('Switched to '+(v==='optimized'?'optimized Scherrer (SNIP baseline + Gaussian width approximation)':'standard Scherrer (endpoint linear baseline)')+' mode','ok');
   }
@@ -2261,6 +2287,15 @@ $('calc').onclick=()=>{
       }
       return;
     }
+    if(m==='lm'){
+      const {peakObj,deconv}=analyzeLM1(l,r,'selected peak');
+      const pk={...peakObj,calibration_factor:1,empirical_size_nm:peakObj.D};
+      const summary=summarizeSizes([pk]);
+      $('singleResult').innerHTML=deconvResultHTML(deconv,summary);
+      drawDeconvCanvas('singleDeconvChart',null,deconv);
+      saveResult({method:'lm',settings:analysisSettings(),summary,peaks:[pk],units:{angle:'degree 2theta',size:'nm',width:'degree 2theta'}});
+      return;
+    }
     const res=m==='standard'?analyze(l,r):analyzeSNIP(l,r);
     const pk={label:'selected peak',...res,calibration_factor:1,empirical_size_nm:res.D};
     const summary=summarizeSizes([pk]);
@@ -2293,7 +2328,7 @@ $('csdPlotType').onchange=()=>{if(state.analysis&&state.analysis.csd)drawCSDCanv
 $('add').onclick=()=>{invalidate();addRow();syncRegions();draw();};
 $('ptco').onclick=()=>{
   invalidate();$('peakRows').innerHTML='';
-  addRow('(111)',39,43.5,'single');
+  addRow('(111)',35.5,44.5,'lm1');
   addRow('(200)',45,48.8,'single');
   addRow('(220)',65,72,'single');
   syncRegions();draw();
@@ -2301,11 +2336,11 @@ $('ptco').onclick=()=>{
 };
 $('ptcoL10').onclick=()=>{
   invalidate();$('peakRows').innerHTML='';
-  addRow('(111)',36.5,44.0,'single');
-  addRow('(200)+(002)',44.0,52.0,'doublet');
+  addRow('(111)',35.5,44.5,'lm1');
+  addRow('(200)+(002)',43.5,51.5,'doublet');
   addRow('(220)+(202)',64.0,75.0,'doublet');
   syncRegions();draw();
-  msg('Loaded PtCo L1₀ 5-peak preset: (111) + (200)/(002) + (220)/(202)','ok');
+  msg('Loaded PtCo L1₀ 5-peak preset: (111) [1-peak LM] + (200)/(002) + (220)/(202)','ok');
 };
 
 $('multiCalc').onclick=()=>{
@@ -2326,6 +2361,9 @@ $('multiCalc').onclick=()=>{
         const d=fitMultiPeakLM(xs,ys,seeds,{shape:'pvoigt',baseline:'linear'});
         if(d.lattice&&!lattice)lattice=d.lattice;
         d.peaks.forEach(({curve,...pk})=>peaks.push(pk));
+      }else if(rMode==='lm1'){
+        const {peakObj}=analyzeLM1(l,r,label);
+        peaks.push(peakObj);
       }else{
         const result=$('calcMode').value==='standard'?analyze(l,r):analyzeSNIP(l,r);
         peaks.push({label,...result});
@@ -2334,9 +2372,21 @@ $('multiCalc').onclick=()=>{
     const wh=williamsonHall(peaks,+$('K').value,+$('lambda').value);
     const summary=summarizeSizes(peaks,{whD:wh.D_nm});
     const latLine=lattice?`<p class="small">Inferred tetragonal lattice (${lattice.pair}): <b>a = ${fmt(lattice.a,4)} Å</b> · <b>c = ${fmt(lattice.c,4)} Å</b> · <b>c/a = ${fmt(lattice.cOverA,4)}</b></p>`:'';
+    // Check if (111) is significantly larger than other reflections (e.g., bimodal sintered core or anisotropic stacking-fault broadening)
+    let diagNote='';
+    const p111=peaks.find(p=>/111/.test(String(p.label||'')));
+    const others=peaks.filter(p=>p!==p111).map(p=>p.D).sort((a,b)=>a-b);
+    if(p111&&others.length>=2){
+      const medOther=others[Math.floor(others.length/2)];
+      if(p111.D>medOther*1.25){
+        diagNote=state.lang==='zh'
+          ?`<div class="note"><b>提示：</b>(111) 表观粒径（${fmt(p111.D,2)} nm）明显大于其余晶面中位数（${fmt(medOther,2)} nm）。常见原因：① (111) 含大/小晶粒双峰（建议切换到 Tab ② 使用 <code>Bimodal (111)</code> + CSD 反演，或改用积分宽度 β）；② FCC/L1₀ 合金中各向异性微应变/层错对 (200)/(220) 展宽更强；③ 若未使用 1-peak LM，端点基线截断也会导致 (111) 粒径偏大。</div>`
+          :`<div class="note"><b>Diagnostic:</b> (111) apparent size (${fmt(p111.D,2)} nm) is >25% larger than the median of other reflections (${fmt(medOther,2)} nm). Common causes: (1) bimodal small+large crystallites sharpening the (111) core (check Tab ② <code>Bimodal (111)</code> + CSD or switch to integral breadth β), (2) anisotropic microstrain/stacking-fault broadening affecting (200)/(220) more strongly in FCC/L1₀ alloys, or (3) endpoint-baseline truncation if not using 1-peak LM.</div>`;
+      }
+    }
     $('multiResult').innerHTML='<div class="result"><b>Multi-peak size results</b><table><tr><th>Peak</th><th>Position</th><th>FWHM</th><th>β (°)</th><th>SNR</th><th>D (nm)</th></tr>'+
       peaks.map(r=>`<tr><td>${escapeHTML(r.label)}</td><td>${fmt(r.peak,3)}°</td><td>${fmt(r.fwhm,3)}°</td><td>${fmt(r.integralBreadth,3)}°</td><td>${fmt(r.snr,1)}</td><td class="val">${fmt(r.D,2)}</td></tr>`).join('')+
-      `</table><p><b>Williamson–Hall (${peaks.length} peaks):</b> ${wh.reason}. ${wh.D_nm===null?'':`D = <b>${fmt(wh.D_nm,2)} nm</b> · strain ε = <b>${fmt(wh.strain,6)}</b> · R² = <b>${fmt(wh.r2,4)}</b>`}</p>${latLine}${summaryBoxHTML(summary)}<p class="small">Isotropic uniform-deformation approximation: β cosθ = Kλ/D + 4ε sinθ. Use at least three distinct clean reflections of one phase, consistent widths and instrumental corrections.</p></div>`;
+      `</table><p><b>Williamson–Hall (${peaks.length} peaks):</b> ${wh.reason}. ${wh.D_nm===null?'':`D = <b>${fmt(wh.D_nm,2)} nm</b> · strain ε = <b>${fmt(wh.strain,6)}</b> · R² = <b>${fmt(wh.r2,4)}</b>`}</p>${latLine}${diagNote}${summaryBoxHTML(summary)}<p class="small">Isotropic uniform-deformation approximation: β cosθ = Kλ/D + 4ε sinθ. Use at least three distinct clean reflections of one phase, consistent widths and instrumental corrections.</p></div>`;
     if(wh.points)drawWH(wh);
     saveResult({method:'multi_peak',settings:analysisSettings(),summary,peaks,williamson_hall:wh,lattice,units:{angle:'degree 2theta',size:'nm',strain:'dimensionless',width:'degree 2theta',lattice:'angstrom'}});
   }catch(e){invalidate();msg(e.message,'err');}
