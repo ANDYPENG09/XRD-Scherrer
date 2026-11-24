@@ -2,31 +2,392 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>XRD-Scherrer Crystallite Size Analysis</title>
+<title>XRD-Scherrer Crystallite Size &amp; Distribution Analysis</title>
 <style>
-:root{--bg:#f5f7fb;--card:#fff;--ink:#182230;--muted:#607086;--line:#dfe6ef;--blue:#2563eb;--violet:#7c3aed;--green:#0f9d58;--orange:#d97706;--red:#dc2626}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 "Segoe UI","Microsoft YaHei",Arial,sans-serif}.wrap{max-width:1120px;margin:auto;padding:24px 18px 50px}
-header{background:linear-gradient(135deg,#2563eb,#0ea5e9);color:white;border-radius:14px;padding:25px 30px;margin-bottom:18px;box-shadow:0 8px 24px #2563eb30}h1{font-size:25px;margin:0 0 5px}header p{margin:3px 0;opacity:.92}.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.badge{border:1px solid #ffffff55;background:#ffffff1f;border-radius:999px;padding:2px 10px;font-size:12px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:16px;box-shadow:0 1px 3px #1020400b}h2{font-size:17px;margin:0 0 13px;display:flex;gap:9px;align-items:center}.n{display:inline-flex;width:25px;height:25px;border-radius:7px;background:var(--blue);color:#fff;align-items:center;justify-content:center;font-size:13px}h3{font-size:14px;margin:14px 0 8px;border-bottom:1px solid var(--line);padding-bottom:5px}.row{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.field{display:flex;flex-direction:column;gap:3px}.field label{font-size:12px;color:var(--muted)}input,select{border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);padding:8px 9px;font-size:13px;min-width:110px}button{border:0;border-radius:8px;padding:9px 15px;font-weight:600;cursor:pointer}.primary{background:var(--blue);color:#fff}.accent{background:var(--violet);color:#fff}.secondary{background:#edf1f6;color:#334155}.primary:hover{background:#1d4ed8}.accent:hover{background:#6d28d9}button:disabled{opacity:.45;cursor:not-allowed}
-#drop{border:2px dashed #b8c8e5;background:#f1f6ff;border-radius:10px;text-align:center;padding:28px 15px;color:var(--muted);cursor:pointer}.drop-title{font-size:16px;color:var(--blue);font-weight:700}.small{font-size:12px;color:var(--muted)}#file{display:none}.info,.msg{margin-top:12px;border-radius:8px;padding:10px 14px}.info{background:#eaf7ef;border:1px solid #b9e2c7;color:#17643d;display:none}.msg{display:none}.msg.ok{display:block;background:#eaf7ef;color:#17643d}.msg.warn{display:block;background:#fff5e5;color:#8a5a08}.msg.err{display:block;background:#fdecec;color:#a41818}
-canvas{display:block;width:100%;height:350px;border:1px solid var(--line);border-radius:8px;background:#fff}.chartbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:8px;color:var(--muted);font-size:12px}.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:12px}.legend span{display:flex;align-items:center;gap:5px}.dot{width:11px;height:11px;border-radius:3px;display:inline-block}.note,.ref{padding:10px 13px;border-radius:8px;font-size:12.5px;margin:8px 0}.note{background:#fff6e6;border-left:4px solid var(--orange)}.ref{background:#f3efff;border-left:4px solid var(--violet)}.peak{background:#fffde8;border:1px solid #f5dd78;border-radius:8px;padding:10px 13px;margin:8px 0}.peak-inputs{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}.peak-inputs input{min-width:82px}.result{background:#eefbf3;border:1px solid #bce6c9;border-radius:9px;padding:14px 16px;margin-top:12px}.result table{width:100%;border-collapse:collapse}.result th{text-align:left;background:#d9f5e2;color:#166534;padding:6px 9px;font-size:12px}.result td{padding:6px 9px;border-bottom:1px solid #dfe9e2}.val{font:700 14px Consolas,monospace;color:#15803d}.good{color:var(--green);font-weight:700}.warnc{color:var(--orange);font-weight:700}.bad{color:var(--red);font-weight:700}.hidden{display:none!important}.tabs{display:flex;gap:8px;margin:12px 0}.tabs button{flex:0 0 auto}.active{box-shadow:inset 0 -3px #fff}.table{width:100%;border-collapse:collapse;font-size:13px}.table th,.table td{border-bottom:1px solid var(--line);padding:6px 7px;text-align:left}.table th{color:#1e40af;background:#eef4ff}.remove{padding:4px 8px;color:#991b1b;background:#fee2e2}
-footer{text-align:center;color:var(--muted);font-size:12px;padding-top:8px}@media(max-width:650px){.wrap{padding:12px 9px 35px}header{padding:20px 19px}h1{font-size:22px}.card{padding:16px 14px}canvas{height:280px}}
-</style></head>
-<body><div class="wrap">
-<header><h1>XRD-Scherrer Crystallite Size Analysis</h1><p>Scherrer crystallite size · Multi-peak + Williamson-Hall · Offline single file</p><p>All processing runs locally in your browser; data never leaves your device</p><div class="badges"><span class="badge">v1.1.0</span><span class="badge">✓ Zero dependencies</span><span class="badge">✓ Gaussian fit / integral</span><span class="badge">✓ Multi-peak + Williamson-Hall</span><span class="badge">✓ SNR & Kα₂ applicability check</span></div></header>
-<section class="card"><h2><span class="n">1</span>Import XRD data</h2><div id="drop"><div class="drop-title">Click to choose a file</div>or drag a file here<div class="small">Supports .xy .xye .csv .txt .dat .asc .ras .json and generic two-column text</div></div><input id="file" type="file" accept=".xy,.xye,.csv,.txt,.dat,.asc,.ras,.json"><div id="info" class="info"></div><div id="msg" class="msg"></div></section>
-<section class="card"><h2><span class="n">2</span>Pattern preview & peak-region selection</h2><canvas id="chart" width="1060" height="350"></canvas><div class="chartbar"><span>Drag to zoom · double-click to reset</span><button class="secondary" id="reset">Reset zoom</button><label><input type="checkbox" id="sqrt"> √Intensity</label><label><input type="checkbox" id="showRegions" checked> Show analysis regions</label></div><div id="legend" class="legend"></div></section>
-<section class="card"><h2><span class="n">3</span>Scherrer crystallite size</h2><div class="note"><b>Formula:</b> D = Kλ/(βcosθ). β is the FWHM after subtracting instrumental broadening. This tool does not strip Kα₂. Use monochromated or externally corrected input; unresolved doublets can bias size. Select a Gaussian or Cauchy instrumental profile independently of width mode. High-angle weak peaks are more affected by background and microstrain. New "PtCo empirical (220 integral)" mode: when selected it auto-analyzes the (220) reflection, using a SNIP baseline + Gaussian width approximation-breadth Scherrer to estimate the crystallite size, with a TEM calibration factor C.</div><div class="tabs"><button id="singleTab" class="primary">① Single peak</button><button id="multiTab" class="accent">② Multi-peak + Williamson-Hall</button></div><div class="row"><div class="field"><label>Calculation mode</label><select id="calcMode"><option value="standard">Standard Scherrer (endpoint baseline)</option><option value="optimized">Optimized Scherrer (SNIP + Gaussian width approximation)</option><option value="ptco">PtCo empirical (220 integral)</option></select></div><div class="field"><label>Width mode</label><select id="mode"><option value="fwhm">FWHM (half-width)</option><option value="integral">integral breadth</option></select></div><div class="field"><label>Shape factor K</label><input id="K" type="number" step=".01" value=".89"></div><div class="field"><label>Wavelength λ (Å)</label><input id="lambda" type="number" step=".000001" value="1.540598"></div><div class="field"><label>Instrumental profile</label><select id="broadeningModel"><option value="gaussian">Gaussian (quadratic subtraction)</option><option value="cauchy">Cauchy (linear subtraction)</option></select></div><div class="field"><label>Instrumental broadening βinst (°)</label><input id="inst" type="number" step=".01" value="0"></div><div class="field" id="cptcoField" style="display:none"><label>PtCo empirical factor C*</label><input id="cptco" type="number" step=".05" value="1"></div></div><div class="note hidden" id="ptcoNote"><b>PtCo empirical calculation (220 peak integral → crystallite size):</b> When this mode is selected it analyzes the (220) reflection by default (66°–71°) and auto-sets the width mode to integral breadth. A SNIP morphological baseline + Gaussian width approximation gives the net peak area and integral breadth; Scherrer D = Kλ/(βcosθ) gives the coherently diffracting domain size, then multiplied by an empirical calibration factor C (pending TEM calibration, default 1). Note: (220) is a fundamental reflection and is weak/broad in this alloy, strongly affected by microstrain/stacking faults; its suitability depends on overlap and anisotropic broadening; compare several clean reflections. Final crystallite size should be based on (111) and TEM.</div><div id="singlePanel"><div class="peak"><b>Single-peak region (2θ, °)</b><div class="peak-inputs"><label>Left bound <input id="left" type="number" step=".05" value="65"></label><label>Right bound <input id="right" type="number" step=".05" value="72"></label><button class="secondary" id="auto">Auto-locate strongest peak</button><button class="primary" id="calc">Fit & calculate</button></div></div><div id="singleResult"></div></div><div id="multiPanel" class="hidden"><h3>Multi-peak size list</h3><table class="table"><thead><tr><th>Label</th><th>Left bound</th><th>Right bound</th><th>Action</th></tr></thead><tbody id="peakRows"></tbody></table><div class="row" style="margin-top:9px"><button class="secondary" id="add">+ Add peak</button><button class="secondary" id="ptco">+ Load PtCo 3 peaks</button><button class="primary" id="multiCalc">Compute multi-peak + Williamson-Hall</button></div><div id="multiResult"></div><canvas id="wh" width="760" height="300" class="hidden" style="margin-top:12px"></canvas></div></section>
-<footer><a href="https://andypeng09.github.io/xrd-toolkit/">XRD Toolkit</a> · XRD-Scherrer · Single-file HTML · MIT License · Author: PENG</footer></div>
+:root{--bg:#f4f7fb;--card:#ffffff;--ink:#162032;--muted:#5c6c82;--line:#dde5ef;--blue:#2563eb;--blue-d:#1d4ed8;--violet:#7c3aed;--violet-d:#6d28d9;--teal:#0d9488;--green:#0f9d58;--orange:#d97706;--red:#dc2626;--soft:#eef4ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 "Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif}
+.wrap{max-width:1160px;margin:auto;padding:22px 18px 54px}
+header{background:linear-gradient(135deg,#1d4ed8,#0ea5e9);color:#fff;border-radius:14px;padding:24px 28px;margin-bottom:18px;box-shadow:0 8px 24px #1d4ed82e;position:relative}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+h1{font-size:24px;margin:0 0 5px;letter-spacing:-.01em}
+header p{margin:3px 0;opacity:.93}
+.lang-btn{background:#ffffff24;color:#fff;border:1px solid #ffffff55;border-radius:999px;padding:6px 14px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+.lang-btn:hover{background:#ffffff38}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.badge{border:1px solid #ffffff55;background:#ffffff1f;border-radius:999px;padding:2px 10px;font-size:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:16px;box-shadow:0 1px 4px #1020400c}
+h2{font-size:17px;margin:0 0 13px;display:flex;gap:9px;align-items:center}
+.n{display:inline-flex;width:25px;height:25px;border-radius:7px;background:var(--blue);color:#fff;align-items:center;justify-content:center;font-size:13px;flex:0 0 auto}
+h3{font-size:14.5px;margin:16px 0 9px;border-bottom:1px solid var(--line);padding-bottom:5px;color:#1e293b}
+.row{display:flex;gap:11px;align-items:flex-end;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:3px}
+.field label{font-size:12px;color:var(--muted);font-weight:500}
+input,select{border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);padding:7px 9px;font-size:13px;min-width:100px}
+input[type=checkbox]{min-width:auto;width:auto;padding:0;margin-right:4px;vertical-align:middle}
+button{border:0;border-radius:8px;padding:8px 14px;font-weight:600;cursor:pointer;font-size:13px;transition:background .15s,opacity .15s}
+.primary{background:var(--blue);color:#fff}.primary:hover{background:var(--blue-d)}
+.accent{background:var(--violet);color:#fff}.accent:hover{background:var(--violet-d)}
+.teal{background:var(--teal);color:#fff}.teal:hover{background:#0f766e}
+.secondary{background:#edf1f6;color:#334155}.secondary:hover{background:#e2e8f0}
+button:disabled{opacity:.45;cursor:not-allowed}
+#drop{border:2px dashed #b8c8e5;background:#f1f6ff;border-radius:10px;text-align:center;padding:24px 15px;color:var(--muted);cursor:pointer}
+#drop:hover{border-color:var(--blue);background:#e8f0ff}
+.drop-title{font-size:16px;color:var(--blue);font-weight:700}
+.small{font-size:12px;color:var(--muted)}
+#file{display:none}
+.info,.msg{margin-top:11px;border-radius:8px;padding:10px 14px}
+.info{background:#eaf7ef;border:1px solid #b9e2c7;color:#17643d;display:none}
+.msg{display:none}
+.msg.ok{display:block;background:#eaf7ef;color:#17643d}
+.msg.warn{display:block;background:#fff5e5;color:#8a5a08}
+.msg.err{display:block;background:#fdecec;color:#a41818}
+canvas{display:block;width:100%;height:350px;border:1px solid var(--line);border-radius:8px;background:#fff}
+#chart{cursor:crosshair}
+.chartbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:8px;color:var(--muted);font-size:12.5px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:#334155}
+.legend span{display:flex;align-items:center;gap:5px}
+.dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+.note,.ref{padding:10px 13px;border-radius:8px;font-size:12.5px;margin:8px 0}
+.note{background:#fff6e6;border-left:4px solid var(--orange)}
+.ref{background:#f3efff;border-left:4px solid var(--violet)}
+.peak{background:#fffde8;border:1px solid #f5dd78;border-radius:8px;padding:11px 13px;margin:10px 0}
+.panel-box{background:#f8fafc;border:1px solid var(--line);border-radius:9px;padding:12px 14px;margin:10px 0}
+.peak-inputs{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.peak-inputs input{min-width:78px;width:96px}
+.result{background:#eefbf3;border:1px solid #bce6c9;border-radius:9px;padding:14px 16px;margin-top:12px}
+.result table{width:100%;border-collapse:collapse;margin-top:6px}
+.result th{text-align:left;background:#d9f5e2;color:#166534;padding:6px 8px;font-size:12px}
+.result td{padding:6px 8px;border-bottom:1px solid #dfe9e2;font-size:13px}
+.val{font:700 13.5px Consolas,Menlo,monospace;color:#15803d}
+.good{color:var(--green);font-weight:700}.warnc{color:var(--orange);font-weight:700}.bad{color:var(--red);font-weight:700}
+.hidden{display:none!important}
+.tabs{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
+.tabs button{flex:0 0 auto;opacity:.78;border:2px solid transparent}
+.tabs button.tab-active{opacity:1;box-shadow:0 2px 8px #0f172a24;border-color:#0f172a22}
+.table{width:100%;border-collapse:collapse;font-size:13px}
+.table th,.table td{border-bottom:1px solid var(--line);padding:6px 7px;text-align:left}
+.table th{color:#1e40af;background:#eef4ff;font-size:12px}
+.table input,.table select{padding:5px 7px;min-width:72px}
+.remove{padding:4px 8px;color:#991b1b;background:#fee2e2;font-size:12px}
+.remove:hover{background:#fecaca}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:10px}
+.kpi{background:#fff;border:1px solid #cde9d6;border-radius:8px;padding:9px 12px}
+.kpi .k{font-size:11.5px;color:var(--muted)}
+.kpi .v{font:700 16px Consolas,Menlo,monospace;color:#14532d;margin-top:2px}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:600;background:#e0e7ff;color:#1e3a8a}
+.preset-bar{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
+.preset-bar button{padding:6px 11px;font-size:12px}
+.csd-box{background:#f0fdfa;border:1px solid #99f6e4;border-radius:10px;padding:14px 16px;margin-top:14px}
+.csd-box h3{border-bottom-color:#99f6e4;color:#115e59;margin-top:2px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding-top:10px}
+@media(max-width:650px){.wrap{padding:12px 9px 35px}header{padding:18px 16px}h1{font-size:20px}.card{padding:15px 13px}canvas{height:270px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="hdr-top">
+    <div>
+      <h1 data-i18n="title">XRD-Scherrer Crystallite Size &amp; Distribution Analysis</h1>
+      <p data-i18n="subtitle">Scherrer · Multi-peak Nonlinear Deconvolution · Crystallite Size Distribution (CSD) · Williamson–Hall · Offline Single File</p>
+      <p data-i18n="privacy">All processing runs locally in your browser; data never leaves your device</p>
+    </div>
+    <button id="langToggle" class="lang-btn" type="button">中文 / EN</button>
+  </div>
+  <div class="badges">
+    <span class="badge">v1.2.0</span>
+    <span class="badge" data-i18n="bZero">✓ Zero dependencies</span>
+    <span class="badge" data-i18n="bDeconv">✓ Pseudo-Voigt LM Deconvolution</span>
+    <span class="badge" data-i18n="bCSD">✓ Spherical NNLS + Krill–Birringer CSD</span>
+    <span class="badge" data-i18n="bWH">✓ L1₀ Multi-peak + Williamson–Hall</span>
+  </div>
+</header>
+
+<section class="card">
+  <h2><span class="n">1</span><span data-i18n="s1">Import XRD data</span></h2>
+  <div id="drop">
+    <div class="drop-title" data-i18n="dropTitle">Click to choose a file</div>
+    <span data-i18n="dropOr">or drag a file here</span>
+    <div class="small" data-i18n="dropSub">Supports .xy .xye .csv .txt .dat .asc .ras .json and generic two-column text</div>
+  </div>
+  <input id="file" type="file" accept=".xy,.xye,.csv,.txt,.dat,.asc,.ras,.json">
+  <div id="demoBar" class="small" style="margin-top:9px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <span data-i18n="noData">No data file?</span>
+    <button id="demo" class="secondary" style="padding:5px 10px" data-i18n="loadDemo">Load PtCo L1₀ demo</button>
+    <button id="demoBimodalBtn" class="secondary" style="padding:5px 10px" data-i18n="loadBimodal">Load Polydisperse / Bimodal PtCo L1₀ demo</button>
+  </div>
+  <div id="info" class="info"></div>
+  <div id="msg" class="msg"></div>
+</section>
+
+<section class="card">
+  <h2><span class="n">2</span><span data-i18n="s2">Pattern preview &amp; peak-region selection</span></h2>
+  <canvas id="chart" width="1060" height="350"></canvas>
+  <div class="chartbar">
+    <span data-i18n="zoomHint">Drag to zoom · double-click to reset</span>
+    <button class="secondary" id="reset" data-i18n="resetZoom">Reset zoom</button>
+    <label><input type="checkbox" id="sqrt"><span data-i18n="sqrtLbl">√Intensity</span></label>
+    <label><input type="checkbox" id="showRegions" checked><span data-i18n="showRegLbl">Show analysis regions</span></label>
+  </div>
+  <div id="legend" class="legend"></div>
+</section>
+
+<section class="card">
+  <h2><span class="n">3</span><span data-i18n="s3">Scherrer crystallite size, deconvolution &amp; CSD</span></h2>
+  <div class="note" data-i18n="formulaNote"><b>Formula:</b> D = Kλ/(βcosθ), with θ = 2θ/2 and β in radians after subtracting instrumental broadening. Kα₂ stripping is not implemented; use monochromated or externally corrected data. For broad overlapping peaks such as PtCo L1₀ (220)+(202), use Multi-peak Deconvolution (Tab ②) or PtCo (220)+(202) mode to avoid endpoint-baseline area underestimation.</div>
+
+  <div class="tabs">
+    <button id="singleTab" class="primary tab-active" data-i18n="tab1">① Single peak</button>
+    <button id="deconvTab" class="teal" data-i18n="tab2">② Multi-peak Deconv &amp; CSD</button>
+    <button id="multiTab" class="accent" data-i18n="tab3">③ Multi-peak + Williamson–Hall</button>
+  </div>
+
+  <div class="row">
+    <div class="field"><label data-i18n="lblCalcMode">Calculation mode</label>
+      <select id="calcMode">
+        <option value="standard">Standard Scherrer (endpoint baseline)</option>
+        <option value="optimized">Optimized Scherrer (SNIP + Gaussian width approx)</option>
+        <option value="ptco">PtCo empirical (220)+(202) deconvolution</option>
+      </select>
+    </div>
+    <div class="field"><label data-i18n="lblWidthMode">Width mode</label>
+      <select id="mode">
+        <option value="fwhm">FWHM (half-width)</option>
+        <option value="integral">Integral breadth</option>
+      </select>
+    </div>
+    <div class="field"><label data-i18n="lblK">Shape factor K</label><input id="K" type="number" step=".01" value=".89"></div>
+    <div class="field"><label data-i18n="lblLambda">Wavelength λ (Å)</label><input id="lambda" type="number" step=".000001" value="1.540598"></div>
+    <div class="field"><label data-i18n="lblInstModel">Instrumental profile</label>
+      <select id="broadeningModel">
+        <option value="gaussian">Gaussian (quadratic subtraction)</option>
+        <option value="cauchy">Cauchy (linear subtraction)</option>
+      </select>
+    </div>
+    <div class="field"><label data-i18n="lblInst">Instrumental broadening βinst (°)</label><input id="inst" type="number" step=".01" value="0"></div>
+    <div class="field" id="cptcoField" style="display:none"><label data-i18n="lblC">PtCo empirical factor C*</label><input id="cptco" type="number" step=".05" value="1"></div>
+  </div>
+
+  <div class="note hidden" id="ptcoNote">
+    <b data-i18n="ptcoTitle">PtCo empirical (220)+(202) deconvolution mode:</b>
+    <span data-i18n="ptcoDesc">Defaults to 64°–75° with 2-peak Pseudo-Voigt + linear-baseline LM deconvolution to cleanly separate the overlapping L1₀ (220)/(202) doublet and recover full tail area without endpoint-chord truncation, reporting individual D(220), D(202), tetragonal a/c/c/a, and empirical D×C.</span>
+    <div style="margin-top:6px"><label><input type="checkbox" id="ptcoSingleSnip"><span data-i18n="ptcoSnipToggle">Use legacy single-peak SNIP mode for comparison</span></label></div>
+  </div>
+
+  <!-- TAB 1: SINGLE PEAK -->
+  <div id="singlePanel">
+    <div class="peak">
+      <b data-i18n="singleRegTitle">Single-peak region (2θ, °)</b>
+      <div class="peak-inputs">
+        <label><span data-i18n="leftBound">Left bound</span> <input id="left" type="number" step=".05" value="64"></label>
+        <label><span data-i18n="rightBound">Right bound</span> <input id="right" type="number" step=".05" value="75"></label>
+        <button class="secondary" id="auto" data-i18n="autoLocate">Auto-locate strongest peak</button>
+        <button class="primary" id="calc" data-i18n="fitCalc">Fit &amp; calculate</button>
+      </div>
+    </div>
+    <div id="singleResult"></div>
+    <canvas id="singleDeconvChart" width="980" height="360" class="hidden" style="margin-top:12px"></canvas>
+  </div>
+
+  <!-- TAB 2: MULTI-PEAK NONLINEAR DECONVOLUTION & CSD -->
+  <div id="deconvPanel" class="hidden">
+    <div class="panel-box">
+      <b data-i18n="deconvPresets">Quick templates &amp; peak seeding (1–6 overlapping sub-peaks)</b>
+      <div class="preset-bar">
+        <button class="secondary" id="preset220" type="button">PtCo L1₀ (220)+(202)</button>
+        <button class="secondary" id="preset200" type="button">PtCo L1₀ (200)+(002)</button>
+        <button class="secondary" id="presetBimodal" type="button">Bimodal (111) small+large</button>
+        <button class="secondary" id="autoSeedPeaks" type="button" data-i18n="autoSeed">Auto-find peaks (−d²I/d2θ²)</button>
+        <button class="secondary" id="addDeconvPeak" type="button" data-i18n="addSubPeak">+ Add sub-peak</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <div class="field"><label data-i18n="leftBound">Left bound (°)</label><input id="deconvLeft" type="number" step=".1" value="64"></div>
+        <div class="field"><label data-i18n="rightBound">Right bound (°)</label><input id="deconvRight" type="number" step=".1" value="75"></div>
+        <div class="field"><label data-i18n="profileShape">Peak profile</label>
+          <select id="deconvShape">
+            <option value="pvoigt">Pseudo-Voigt (fit η)</option>
+            <option value="gaussian">Gaussian (η = 0)</option>
+            <option value="lorentzian">Lorentzian (η = 1)</option>
+          </select>
+        </div>
+        <div class="field"><label data-i18n="baseMode">Baseline model</label>
+          <select id="deconvBaseline">
+            <option value="linear">Joint linear baseline</option>
+            <option value="snip">SNIP morphological baseline</option>
+          </select>
+        </div>
+        <button class="teal" id="runDeconv" type="button" data-i18n="runDeconvBtn">Run multi-peak LM fit</button>
+      </div>
+
+      <table class="table" style="margin-top:10px">
+        <thead>
+          <tr>
+            <th data-i18n="thLabel">Label</th>
+            <th>Init 2θ (°)</th>
+            <th>Init FWHM (°)</th>
+            <th data-i18n="thShift">Max ±Δ2θ (°)</th>
+            <th data-i18n="thAction">Action</th>
+          </tr>
+        </thead>
+        <tbody id="deconvSeeds"></tbody>
+      </table>
+    </div>
+
+    <div id="deconvResult"></div>
+    <canvas id="deconvChart" width="1020" height="400" class="hidden" style="margin-top:12px"></canvas>
+    <div id="deconvLegend" class="legend"></div>
+
+    <!-- CSD INVERSION PANEL (INTEGRATED IN TAB 2) -->
+    <div id="csdPanel" class="csd-box hidden">
+      <h3 data-i18n="csdTitle">Crystallite Size Distribution (CSD) Inversion — Reciprocal Space Spherical Kernel + Tikhonov-NNLS &amp; Krill–Birringer</h3>
+      <div class="small" data-i18n="csdDesc">Isolates the selected peak by subtracting the fitted baseline and neighboring overlapping sub-peaks (or uses the full composite profile for co-centered bimodal peaks), maps to s = 2sinθ/λ − s₀, and inverts spherical crystallite diffraction kernels I_S(s; D) via volume/area-hybrid second-order Tikhonov-NNLS, cross-checked against de Keijser (1982) + Krill–Birringer lognormal analysis.</div>
+      <div class="row" style="margin-top:9px">
+        <div class="field"><label data-i18n="csdTargetLbl">Target peak profile</label><select id="csdTarget"></select></div>
+        <div class="field"><label>Dmin (nm)</label><input id="csdDmin" type="number" step=".5" value="1"></div>
+        <div class="field"><label>Dmax (nm)</label><input id="csdDmax" type="number" step="5" value="80"></div>
+        <div class="field"><label data-i18n="csdRegLbl">Smoothness (Tikhonov)</label>
+          <select id="csdReg">
+            <option value="auto">Auto (discrepancy / L-curve)</option>
+            <option value="low">Low (sharper modes)</option>
+            <option value="medium">Medium</option>
+            <option value="high">High (smoother)</option>
+          </select>
+        </div>
+        <div class="field"><label data-i18n="csdPlotLbl">Curve display</label>
+          <select id="csdPlotType">
+            <option value="pdf">PDF — f_V(D) &amp; f_N(D)</option>
+            <option value="cdf">CDF — Cumulative F_V(D) &amp; F_N(D)</option>
+          </select>
+        </div>
+        <button class="teal" id="runCSD" type="button" data-i18n="runCSDBtn">Compute CSD</button>
+      </div>
+      <div id="csdResult"></div>
+      <canvas id="csdChart" width="1020" height="330" class="hidden" style="margin-top:12px"></canvas>
+      <div id="csdLegend" class="legend"></div>
+    </div>
+  </div>
+
+  <!-- TAB 3: MULTI-PEAK + WILLIAMSON-HALL -->
+  <div id="multiPanel" class="hidden">
+    <h3 data-i18n="multiTitle">Multi-peak size list &amp; Williamson–Hall</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th data-i18n="thLabel">Label</th>
+          <th data-i18n="leftBound">Left bound</th>
+          <th data-i18n="rightBound">Right bound</th>
+          <th data-i18n="thRowMode">Fit mode</th>
+          <th data-i18n="thAction">Action</th>
+        </tr>
+      </thead>
+      <tbody id="peakRows"></tbody>
+    </table>
+    <div class="row" style="margin-top:9px">
+      <button class="secondary" id="add" data-i18n="addPeak">+ Add peak</button>
+      <button class="secondary" id="ptco" data-i18n="loadPtCo3">+ Load PtCo 3 peaks</button>
+      <button class="teal" id="ptcoL10" data-i18n="loadPtCoL10">+ Load PtCo L1₀ (5 peaks)</button>
+      <button class="primary" id="multiCalc" data-i18n="multiCalcBtn">Compute multi-peak + Williamson–Hall</button>
+    </div>
+    <div id="multiResult"></div>
+    <canvas id="wh" width="760" height="300" class="hidden" style="margin-top:12px"></canvas>
+  </div>
+</section>
+
+<footer><a href="https://andypeng09.github.io/xrd-toolkit/">XRD Toolkit</a> · XRD-Scherrer v1.2.0 · Single-file HTML · MIT License · Author: Yu Peng (ANDYPENG09)</footer>
+</div>
+
 <script>
 'use strict';
-const $=id=>document.getElementById(id), state={x:[],y:[],name:'Demo data',fmt:'DEMO',zoom:null};
+const $=id=>document.getElementById(id);
+const state={x:[],y:[],name:'Demo data',fmt:'DEMO',zoom:null,analysis:null,lastDeconv:null,lang:'en',activeTab:'single'};
 const REGIONS=[];
 const TOOL_ID='XRD-Scherrer';
-const REFERENCES={scherrer:'Scherrer (1918); Cullity & Stock, Elements of X-Ray Diffraction, 3rd ed.; DTU Nanolab Instrumental broadening in T2T'};
-function msg(t,c='ok'){const e=$('msg');e.className='msg '+c;e.textContent=t} function fmt(v,n=3){return Number(v).toFixed(n)}
+const TOOL_VERSION='1.2.0';
+const REFERENCES={
+  scherrer:'Scherrer (1918); Cullity & Stock, Elements of X-Ray Diffraction, 3rd ed.',
+  wh:'Williamson & Hall, Acta Metallurgica 1 (1953), 22-31',
+  snip:'Ryan et al. (1988), SNIP baseline',
+  voigt:'de Keijser, Langford, Mittemeijer & Vogels, J. Appl. Cryst. 15 (1982), 308-314',
+  csd:'Stokes & Wilson (1942); Krill & Birringer, Phil. Mag. A 77 (1998), 621-640; Langford, Louër & Scardi, J. Appl. Cryst. 33 (2000), 964-974; Scardi & Leoni, Acta Cryst. A57 (2001), 604-613'
+};
+const SUB_COLORS=['#dc2626','#0d9488','#7c3aed','#d97706','#db2777','#0284c7'];
+const SQRT_PI_4LN2=Math.sqrt(Math.PI/(4*Math.log(2)));
+const HALF_PI=Math.PI/2;
+const PHI_G=2*Math.sqrt(Math.log(2)/Math.PI); // 0.9394372787
+const PHI_C=2/Math.PI;                        // 0.6366197724
 
+const I18N={
+  en:{
+    title:'XRD-Scherrer Crystallite Size & Distribution Analysis',
+    subtitle:'Scherrer · Multi-peak Nonlinear Deconvolution · Crystallite Size Distribution (CSD) · Williamson–Hall · Offline Single File',
+    privacy:'All processing runs locally in your browser; data never leaves your device',
+    bZero:'✓ Zero dependencies',bDeconv:'✓ Pseudo-Voigt LM Deconvolution',bCSD:'✓ Spherical NNLS + Krill–Birringer CSD',bWH:'✓ L1₀ Multi-peak + Williamson–Hall',
+    s1:'Import XRD data',dropTitle:'Click to choose a file',dropOr:'or drag a file here',dropSub:'Supports .xy .xye .csv .txt .dat .asc .ras .json and generic two-column text',
+    noData:'No data file?',loadDemo:'Load PtCo L1₀ demo',loadBimodal:'Load Polydisperse / Bimodal PtCo L1₀ demo',
+    s2:'Pattern preview & peak-region selection',zoomHint:'Drag to zoom · double-click to reset',resetZoom:'Reset zoom',sqrtLbl:'√Intensity',showRegLbl:'Show analysis regions',
+    s3:'Scherrer crystallite size, deconvolution & CSD',
+    formulaNote:'<b>Formula:</b> D = Kλ/(βcosθ), with θ = 2θ/2 and β in radians after subtracting instrumental broadening. Kα₂ stripping is not implemented; use monochromated or externally corrected data. For broad overlapping peaks such as PtCo L1₀ (220)+(202), use Multi-peak Deconvolution (Tab ②) or PtCo (220)+(202) mode to avoid endpoint-baseline area underestimation.',
+    tab1:'① Single peak',tab2:'② Multi-peak Deconv & CSD',tab3:'③ Multi-peak + Williamson–Hall',
+    lblCalcMode:'Calculation mode',lblWidthMode:'Width mode',lblK:'Shape factor K',lblLambda:'Wavelength λ (Å)',lblInstModel:'Instrumental profile',lblInst:'Instrumental broadening βinst (°)',lblC:'PtCo empirical factor C*',
+    ptcoTitle:'PtCo empirical (220)+(202) deconvolution mode:',
+    ptcoDesc:'Defaults to 64°–75° with 2-peak Pseudo-Voigt + linear-baseline LM deconvolution to cleanly separate the overlapping L1₀ (220)/(202) doublet and recover full tail area without endpoint-chord truncation, reporting individual D(220), D(202), tetragonal a/c/c/a, and empirical D×C.',
+    ptcoSnipToggle:'Use legacy single-peak SNIP mode for comparison',
+    singleRegTitle:'Single-peak region (2θ, °)',leftBound:'Left bound',rightBound:'Right bound',autoLocate:'Auto-locate strongest peak',fitCalc:'Fit & calculate',
+    deconvPresets:'Quick templates & peak seeding (1–6 overlapping sub-peaks)',autoSeed:'Auto-find peaks (−d²I/d2θ²)',addSubPeak:'+ Add sub-peak',
+    profileShape:'Peak profile',baseMode:'Baseline model',runDeconvBtn:'Run multi-peak LM fit',thLabel:'Label',thShift:'Max ±Δ2θ (°)',thAction:'Action',thRowMode:'Fit mode',
+    csdTitle:'Crystallite Size Distribution (CSD) Inversion — Reciprocal Space Spherical Kernel + Tikhonov-NNLS & Krill–Birringer',
+    csdDesc:'Isolates the selected peak by subtracting the fitted baseline and neighboring overlapping sub-peaks (or uses the full composite profile for co-centered bimodal peaks), maps to s = 2sinθ/λ − s₀, and inverts spherical crystallite diffraction kernels I_S(s; D) via volume/area-hybrid second-order Tikhonov-NNLS, cross-checked against de Keijser (1982) + Krill–Birringer lognormal analysis.',
+    csdTargetLbl:'Target peak profile',csdRegLbl:'Smoothness (Tikhonov)',csdPlotLbl:'Curve display',runCSDBtn:'Compute CSD',
+    multiTitle:'Multi-peak size list & Williamson–Hall',addPeak:'+ Add peak',loadPtCo3:'+ Load PtCo 3 peaks',loadPtCoL10:'+ Load PtCo L1₀ (5 peaks)',multiCalcBtn:'Compute multi-peak + Williamson–Hall',
+    exportTitle:'Export current analysis',exportDesc:'JSON includes units, method, deconvolution & CSD parameters. CSV summarizes peak results; CSD CSV exports the inverted f_V(D) & f_N(D) table. Editing inputs clears stale results.'
+  },
+  zh:{
+    title:'XRD-Scherrer 晶粒尺寸与粒径分布分析',
+    subtitle:'谢乐公式 · 多峰非线性分峰 · 晶粒粒径分布 (CSD) 拆解 · Williamson–Hall · 单文件离线运行',
+    privacy:'所有计算均在本地浏览器完成，实验数据不会离开您的设备',
+    bZero:'✓ 零外部依赖',bDeconv:'✓ Pseudo-Voigt LM 非线性分峰',bCSD:'✓ 球形核 NNLS + Krill–Birringer 粒径分布',bWH:'✓ L1₀ 多峰 + Williamson–Hall',
+    s1:'导入 XRD 数据',dropTitle:'点击选择数据文件',dropOr:'或拖拽文件到此处',dropSub:'支持 .xy .xye .csv .txt .dat .asc .ras .json 及通用两列数值文本',
+    noData:'没有数据文件？',loadDemo:'加载 PtCo L1₀ 标准示例',loadBimodal:'加载多分散 / 双峰 PtCo L1₀ 示例',
+    s2:'谱图预览与分析区间选择',zoomHint:'拖动框选缩放 · 双击重置视图',resetZoom:'重置缩放',sqrtLbl:'√强度',showRegLbl:'显示分析区间',
+    s3:'谢乐晶粒尺寸、多峰分峰与粒径分布 (CSD)',
+    formulaNote:'<b>公式：</b>D = Kλ/(βcosθ)，其中 θ = 2θ/2，β 为扣除仪器展宽后的弧度峰宽。本工具未实现 Kα₂ 剥离，请使用单色化或预先剥离的数据。对 PtCo L1₀ (220)+(202) 等宽化重叠双峰，建议使用“② 多峰分峰与 CSD”或“PtCo (220)+(202) 分峰模式”以避免端点基线截断导致积分面积偏小。',
+    tab1:'① 单峰 / PtCo (220)',tab2:'② 多峰分峰与粒径分布 (CSD)',tab3:'③ 多峰 + Williamson–Hall',
+    lblCalcMode:'计算模式',lblWidthMode:'峰宽定义',lblK:'形状因子 K',lblLambda:'波长 λ (Å)',lblInstModel:'仪器峰形模型',lblInst:'仪器展宽 βinst (°)',lblC:'PtCo 经验校准因子 C*',
+    ptcoTitle:'PtCo 经验模式（(220)+(202) 双峰分峰）：',
+    ptcoDesc:'默认在 64°–75° 区间用 2 峰 Pseudo-Voigt + 联合线性基线 LM 拟合，精准拆分重叠的 L1₀ (220)/(202) 双峰并恢复完整拖尾积分面积，同时给出 D(220)、D(202)、四方相晶格常数 a/c/c/a 及经验粒径 D×C。',
+    ptcoSnipToggle:'切换为旧版单峰 SNIP 模式作对比',
+    singleRegTitle:'单峰分析区间 (2θ, °)',leftBound:'左边界',rightBound:'右边界',autoLocate:'自动定位最强峰',fitCalc:'拟合与计算',
+    deconvPresets:'预设模板与初值寻峰（支持 1–6 个重叠子峰）',autoSeed:'自动寻峰 (−d²I/d2θ²)',addSubPeak:'+ 添加子峰',
+    profileShape:'子峰峰形',baseMode:'基线模型',runDeconvBtn:'运行多峰 LM 拟合',thLabel:'峰标签',thShift:'允许偏移 ±Δ2θ (°)',thAction:'操作',thRowMode:'拟合模式',
+    csdTitle:'晶粒粒径分布 (CSD) 拆解 — 倒易空间球形核 Tikhonov-NNLS 与 Krill–Birringer 交叉校验',
+    csdDesc:'从原始数据扣除拟合基线及相邻重叠子峰（同中心双峰默认采用 Composite 整体复合轮廓），映射至倒易空间 s = 2sinθ/λ − s₀，使用精确球形晶粒衍射核 I_S(s; D) + 体积/面积混合二阶平滑 Tikhonov-NNLS 反演连续 f_V(D) 与 f_N(D)，并用 de Keijser (1982) + Krill–Birringer 对数正态解析解作交叉校验。',
+    csdTargetLbl:'目标分析轮廓',csdRegLbl:'平滑正则化 (Tikhonov)',csdPlotLbl:'分布曲线显示',runCSDBtn:'反演粒径分布 (CSD)',
+    multiTitle:'多峰晶粒尺寸列表与 Williamson–Hall',addPeak:'+ 添加峰区',loadPtCo3:'+ 加载 PtCo 3 峰',loadPtCoL10:'+ 加载 PtCo L1₀ (5 峰分峰)',multiCalcBtn:'计算多峰 + Williamson–Hall',
+    exportTitle:'导出当前分析结果',exportDesc:'JSON 包含单位、算法设置、分峰与 CSD 参数；CSV 汇总峰结果；CSD CSV 导出反演的 f_V(D) / f_N(D) 分布表。修改输入会自动清空旧结果。'
+  }
+};
+
+function applyLang(lang){
+  state.lang=lang==='zh'?'zh':'en';
+  try{localStorage.setItem('xrd_scherrer_lang',state.lang);}catch(_){}
+  const dict=I18N[state.lang];
+  document.documentElement.lang=state.lang==='zh'?'zh-CN':'en';
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n');
+    if(dict[k]!==undefined){
+      if(dict[k].includes('<'))el.innerHTML=dict[k];
+      else el.textContent=dict[k];
+    }
+  });
+  $('langToggle').textContent=state.lang==='zh'?'Switch to EN':'切换中文';
+}
+
+function msg(t,c='ok'){const e=$('msg');if(!e)return;e.className='msg '+c;e.textContent=t;}
+function fmt(v,n=3){return Number.isFinite(Number(v))?Number(v).toFixed(n):'—';}
 function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+// ==================== PARSING & EXPORTS ====================
 function parse(text){
   let pairs=[];const source=text.trim();
   if(source.startsWith('{')||source.startsWith('[')){
@@ -53,21 +414,333 @@ function parse(text){
   if(decreasing)pairs.reverse();
   return{x:pairs.map(p=>p[0]),y:pairs.map(p=>p[1])};
 }
-function invalidate(){state.analysis=null;for(const id of ['singleResult','multiResult','ptResult','dcResult'])if($(id))$(id).innerHTML='';if($('wh'))$('wh').classList.add('hidden');for(const id of ['exportJSON','exportCSV'])if($(id))$(id).disabled=true;}
-function saveResult(result){const check=v=>{if(typeof v==='number'&&!Number.isFinite(v))throw Error('Analysis produced a non-finite result; review input and settings');if(v&&typeof v==='object')Object.values(v).forEach(check);};check(result);state.analysis={schema_version:'1.0.0',tool:TOOL_ID,tool_version:'1.1.0',sample_name:state.name,synthetic:state.fmt==='DEMO',...result};$('exportJSON').disabled=false;$('exportCSV').disabled=false;}
-function downloadFile(name,text,type){const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+
+function invalidate(){
+  state.analysis=null;
+  state.lastDeconv=null;
+  for(const id of ['singleResult','multiResult','deconvResult','csdResult','ptResult','dcResult'])if($(id))$(id).innerHTML='';
+  for(const id of ['wh','deconvChart','csdChart','singleDeconvChart'])if($(id))$(id).classList.add('hidden');
+  if($('csdPanel'))$('csdPanel').classList.add('hidden');
+  if($('deconvLegend'))$('deconvLegend').innerHTML='';
+  if($('csdLegend'))$('csdLegend').innerHTML='';
+  for(const id of ['exportJSON','exportCSV','exportCSDCSV'])if($(id))$(id).disabled=true;
+}
+
+function saveResult(result){
+  const check=v=>{
+    if(typeof v==='number'&&!Number.isFinite(v))throw Error('Analysis produced a non-finite result; review input and settings');
+    if(v&&typeof v==='object')Object.values(v).forEach(check);
+  };
+  check(result);
+  state.analysis={schema_version:'1.2.0',tool:TOOL_ID,tool_version:TOOL_VERSION,sample_name:state.name,synthetic:state.fmt==='DEMO',...result};
+  if($('exportJSON'))$('exportJSON').disabled=false;
+  if($('exportCSV'))$('exportCSV').disabled=false;
+  if($('exportCSDCSV'))$('exportCSDCSV').disabled=!state.analysis.csd;
+}
+
+function downloadFile(name,text,type){
+  const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');
+  a.href=url;a.download=name;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
 function csvCell(v){let s=v==null?'':String(v);if(/^[=+@-]/.test(s)&&typeof v==='string')s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
 function rowsCSV(rows){return rows.map(r=>r.map(csvCell).join(',')).join('\r\n')+'\r\n';}
-function mountExports(){const section=document.createElement('section');section.className='card';section.innerHTML='<h2>Export current analysis</h2><p class="small">JSON includes units, method and settings. CSV summarizes the current result. Editing inputs clears old results.</p><button class="secondary" id="exportJSON" disabled>Download JSON</button> <button class="secondary" id="exportCSV" disabled>Download CSV</button>';$('drop').closest('.wrap').querySelector('footer').before(section);$('exportJSON').onclick=()=>{if(state.analysis)downloadFile(TOOL_ID+'-analysis.json',JSON.stringify(state.analysis,null,2),'application/json');};$('exportCSV').onclick=()=>{if(state.analysis)downloadFile(TOOL_ID+'-results.csv',analysisCSV(state.analysis),'text/csv;charset=utf-8');};document.addEventListener('input',e=>{if(e.target.matches('input,select'))invalidate();});document.addEventListener('change',e=>{if(e.target.matches('input,select'))invalidate();});}
+
+function analysisCSV(a){
+  const peaks=a.peaks||[];
+  return rowsCSV([
+    ['sample_name','tool_version','method','peak','2theta_deg','height','fwhm_deg','integral_breadth_deg','eta','net_area','area_fraction','corrected_width_deg','size_nm','empirical_size_nm','WH_size_nm','WH_strain','WH_R2','lattice_a_A','lattice_c_A','c_over_a','CSD_DN_nm','CSD_sigmaN_nm','CSD_DA_nm','CSD_DV_nm'],
+    ...peaks.map(p=>[
+      a.sample_name,a.tool_version,a.method,p.label,p.peak,p.max??p.height??null,
+      p.fwhm,p.integralBreadth,p.eta??null,p.area??null,p.areaFraction??null,
+      p.correctedDeg,p.D,p.empirical_size_nm??null,
+      a.williamson_hall?.D_nm??null,a.williamson_hall?.strain??null,a.williamson_hall?.r2??null,
+      a.lattice?.a??null,a.lattice?.c??null,a.lattice?.cOverA??null,
+      a.csd?.nnls?.D_N??null,a.csd?.nnls?.sigma_N??null,a.csd?.nnls?.D_A??null,a.csd?.nnls?.D_V??null
+    ])
+  ]);
+}
+
+function csdCSV(csd){
+  if(!csd||!csd.nnls)return '';
+  const n=csd.nnls;
+  const rows=[['D_nm','f_V_per_nm','CDF_V','f_N_per_nm','CDF_N']];
+  for(let i=0;i<n.D.length;i++)rows.push([n.D[i],n.fV[i],n.cdfV[i],n.fN[i],n.cdfN[i]]);
+  return rowsCSV(rows);
+}
+
+function invalidateCSD(){
+  if($('csdResult'))$('csdResult').innerHTML='';
+  if($('csdChart'))$('csdChart').classList.add('hidden');
+  if($('csdLegend'))$('csdLegend').innerHTML='';
+  if(state.analysis&&state.analysis.csd)delete state.analysis.csd;
+  if($('exportCSDCSV'))$('exportCSDCSV').disabled=true;
+}
+function mountExports(){
+  const section=document.createElement('section');
+  section.className='card';
+  section.innerHTML='<h2 data-i18n="exportTitle">Export current analysis</h2><p class="small" data-i18n="exportDesc">JSON includes units, method, deconvolution &amp; CSD parameters. CSV summarizes peak results; CSD CSV exports the inverted f_V(D) &amp; f_N(D) table. Editing inputs clears stale results.</p><div class="row"><button class="secondary" id="exportJSON" disabled>Download JSON</button><button class="secondary" id="exportCSV" disabled>Download CSV</button><button class="secondary" id="exportCSDCSV" disabled>Download CSD CSV</button></div>';
+  $('drop').closest('.wrap').querySelector('footer').before(section);
+  $('exportJSON').onclick=()=>{if(state.analysis)downloadFile(TOOL_ID+'-analysis.json',JSON.stringify(state.analysis,null,2),'application/json');};
+  $('exportCSV').onclick=()=>{if(state.analysis)downloadFile(TOOL_ID+'-results.csv',analysisCSV(state.analysis),'text/csv;charset=utf-8');};
+  $('exportCSDCSV').onclick=()=>{if(state.analysis&&state.analysis.csd)downloadFile(TOOL_ID+'-csd.csv',csdCSV(state.analysis.csd),'text/csv;charset=utf-8');};
+  const onEdit=e=>{
+    if(!e.target.matches('input,select'))return;
+    if(e.target.id==='sqrt'||e.target.id==='showRegions'||e.target.id==='csdPlotType')return;
+    if(e.target.closest('#csdPanel')){invalidateCSD();return;}
+    invalidate();
+  };
+  document.addEventListener('input',onEdit);
+  document.addEventListener('change',onEdit);
+}
+
+// ==================== EXACT SPHERICAL KERNEL & SYNTHETIC DEMOS ====================
+function sphericalKernel(s,D){
+  // Exact Stokes-Wilson / Scardi-Leoni spherical crystallite diffraction intensity per unit volume:
+  // I_S(s; D) = (3D / q^4) * [(q - sin q)^2 + (1 - cos q)^2], q = 2*pi*s*D, unit integral over s in (-inf, +inf)
+  const q=2*Math.PI*s*D;
+  const aq=Math.abs(q);
+  if(aq<0.05){
+    const q2=q*q;
+    return 3*D*(0.25 - q2/72 + (q2*q2)/2880 - (q2*q2*q2)/201600);
+  }
+  const sq=Math.sin(q), cq=Math.cos(q);
+  const t1=q-sq, t2=1-cq;
+  return 3*D*(t1*t1+t2*t2)/(q*q*q*q);
+}
+
+function sphericalProfile2Theta(twoThetaArr,centerDeg,lambdaA,Dweights){
+  // Dweights: array of [D_nm, weight], sum(weight) = 1
+  const lamNm=lambdaA/10;
+  const s0=2*Math.sin(centerDeg*Math.PI/360)/lamNm;
+  const dsdDeg=(Math.cos(centerDeg*Math.PI/360)/lamNm)*(Math.PI/180);
+  return twoThetaArr.map(tt=>{
+    const s=2*Math.sin(tt*Math.PI/360)/lamNm - s0;
+    let val=0;
+    for(const [D,w] of Dweights)val+=w*sphericalKernel(s,D);
+    return val*dsdDeg; // unit area in degrees 2theta
+  });
+}
+
+function lognormalSphereWeights(D0,sigma,n=45){
+  // Volume-weighted quadrature over D for lognormal number distribution (D0, sigma):
+  // Volume-weighted log-normal has log-mean ln(D0) + 3*sigma^2 and log-std sigma.
+  const muV=Math.log(D0)+3*sigma*sigma;
+  const lo=muV-4*sigma, hi=muV+4*sigma, du=(hi-lo)/(n-1);
+  const pts=[];let sum=0;
+  for(let i=0;i<n;i++){
+    const u=lo+i*du, D=Math.exp(u), w=Math.exp(-0.5*((u-muV)/sigma)**2)*(i===0||i===n-1?0.5:1);
+    pts.push([D,w]);sum+=w;
+  }
+  return pts.map(([D,w])=>[D,w/sum]);
+}
 
 const PEAKS=[[23.96,25.0,0.7],[33.34,53.1,0.85],[40.304,380.0,0.5945],[47.144,146.1,0.85],[49.032,119.6,0.85],[53.6,40.0,0.8],[68.45,120.0,0.934],[70.46,70.0,0.85],[78.5,45.0,0.85],[83.5,22.0,0.8],[86.3,35.0,0.85],[89.2,60.0,0.85]];
-function demo(){invalidate();const x=[],y=[];let seed=20260604;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff*2-1};const peakAt=a=>{let z=40+6*Math.sin(a*0.22)+rnd()*2.5;for(const [p,h,w] of PEAKS)z+=h*Math.exp(-.5*((a-p)/w)**2);return z};for(let i=0;i<=3264;i++){const a=10+i*80/3264;x.push(a);y.push(peakAt(a))}state.x=x;state.y=y;state.name='Synthetic PtCo L1₀ demo data';state.fmt='DEMO';onLoaded()}
-function onLoaded(){invalidate();state.zoom=null;$('info').style.display='block';$('info').innerHTML=`File: <b>${escapeHTML(state.name)}</b> (${state.fmt})<br>Points: ${state.x.length} · 2θ: ${fmt(state.x[0],4)}° ~ ${fmt(state.x.at(-1),4)}° · Step: ${fmt((state.x.at(-1)-state.x[0])/(state.x.length-1),5)}°`;draw();msg('Data imported successfully; ready to analyze','ok')}
-function range(){return state.zoom||[state.x[0],state.x.at(-1)]} function idxRange(l,r){const a=[];state.x.forEach((v,i)=>{if(v>=l&&v<=r)a.push(i)});return a}
-function draw(){const c=$('chart'),ctx=c.getContext('2d'),W=c.width,H=c.height;ctx.clearRect(0,0,W,H);ctx.strokeStyle='#dfe6ef';ctx.lineWidth=1;for(let j=0;j<5;j++){const yy=25+j*(H-55)/4;ctx.beginPath();ctx.moveTo(50,yy);ctx.lineTo(W-16,yy);ctx.stroke()}const [l,r]=range(), ys=state.y.map(v=>$('sqrt').checked?Math.sqrt(Math.max(0,v)):v), ymin=ys.reduce((a,b)=>Math.min(a,b),Infinity),ymax=ys.reduce((a,b)=>Math.max(a,b),-Infinity), X=v=>50+(v-l)/(r-l)*(W-66),Y=v=>(H-28)-(v-ymin)/(ymax-ymin||1)*(H-53);ctx.strokeStyle='#2563eb';ctx.lineWidth=1.4;ctx.beginPath();state.x.forEach((v,i)=>{if(v<l||v>r)return;i?ctx.lineTo(X(v),Y(ys[i])):ctx.moveTo(X(v),Y(ys[i]))});ctx.stroke();ctx.fillStyle='#607086';ctx.font='12px Segoe UI';ctx.fillText(l.toFixed(1)+'°',50,H-8);ctx.fillText(r.toFixed(1)+'°',W-55,H-8);ctx.fillText('Intensity',8,22);ctx.fillText('2θ',W-28,H-8);if($('showRegions').checked){ctx.setLineDash([5,4]);for(const [a,b,color] of REGIONS){if(b>=l&&a<=r){ctx.strokeStyle=color;ctx.beginPath();ctx.moveTo(X(a),25);ctx.lineTo(X(a),H-28);ctx.moveTo(X(b),25);ctx.lineTo(X(b),H-28);ctx.stroke()}}ctx.setLineDash([])}}
-function baselineAt(x,a,b,ya,yb){return ya+(yb-ya)*(x-a)/(b-a)}
-function trapArea(arr){let area=0;for(let i=1;i<arr.length;i++)area+=0.5*(arr[i-1].z+arr[i].z)*(arr[i].x-arr[i-1].x);return area}
-function crossing(x1,y1,x2,y2,level){if(y2===y1)return(x1+x2)/2;return x1+(level-y1)*(x2-x1)/(y2-y1)}
+function demo(){
+  invalidate();
+  const x=[],y=[];let seed=20260604;
+  const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff*2-1;};
+  const peakAt=a=>{let z=40+6*Math.sin(a*0.22)+rnd()*2.5;for(const [p,h,w] of PEAKS)z+=h*Math.exp(-0.5*((a-p)/w)**2);return z;};
+  for(let i=0;i<=3264;i++){const a=10+i*80/3264;x.push(a);y.push(peakAt(a));}
+  state.x=x;state.y=y;state.name='Synthetic PtCo L1₀ demo data';state.fmt='DEMO';
+  onLoaded();
+}
+
+function demoBimodal(){
+  invalidate();
+  const lam=1.540598;
+  const x=[];for(let i=0;i<=3200;i++)x.push(20+i*60/3200);
+  const y=x.map(a=>42-0.14*(a-20)+4*Math.sin(a*0.18));
+  let seed=20261124;
+  const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return (seed/0x7fffffff*2-1)+(seed%97)/97*0.2-0.1;};
+  // Bimodal (111): 40% volume at D=4.2 nm + 60% volume at D=18.5 nm (narrow+broad co-centered!)
+  const wBim=[
+    ...lognormalSphereWeights(4.0,0.18,21).map(([D,w])=>[D,0.40*w]),
+    ...lognormalSphereWeights(18.0,0.16,21).map(([D,w])=>[D,0.60*w])
+  ];
+  // Polydisperse lognormal for (200)+(002) and (220)+(202): D0=6.2 nm, sigma=0.32
+  const wPoly=lognormalSphereWeights(6.2,0.32,33);
+  const addSphere=(pos,area,wts)=>{
+    const prof=sphericalProfile2Theta(x,pos,lam,wts);
+    for(let i=0;i<x.length;i++)y[i]+=area*prof[i];
+  };
+  addSphere(23.96,42,wPoly);
+  addSphere(33.34,95,wPoly);
+  addSphere(40.304,680,wBim);
+  addSphere(47.144,290,wPoly);
+  addSphere(49.032,215,wPoly);
+  addSphere(53.60,65,wPoly);
+  addSphere(68.45,320,wPoly);
+  addSphere(70.46,195,wPoly);
+  for(let i=0;i<y.length;i++)y[i]=Math.max(1,y[i]+rnd()*1.6);
+  state.x=x;state.y=y;state.name='Synthetic Polydisperse / Bimodal PtCo L1₀ demo';state.fmt='DEMO';
+  onLoaded();
+}
+
+function onLoaded(){
+  invalidate();
+  state.zoom=null;
+  $('info').style.display='block';
+  $('info').innerHTML=`File: <b>${escapeHTML(state.name)}</b> (${state.fmt})<br>Points: ${state.x.length} · 2θ: ${fmt(state.x[0],4)}° ~ ${fmt(state.x.at(-1),4)}° · Step: ${fmt((state.x.at(-1)-state.x[0])/(state.x.length-1),5)}°`;
+  syncRegions();
+  draw();
+  msg(state.lang==='zh'?'数据已导入，准备就绪':'Data imported successfully; ready to analyze','ok');
+}
+
+// ==================== MAIN CHART + DRAG ZOOM + ACTIVE REGION HIGHLIGHT ====================
+function range(){return state.zoom||[state.x[0],state.x.at(-1)];}
+function idxRange(l,r){const a=[];state.x.forEach((v,i)=>{if(v>=l&&v<=r)a.push(i);});return a;}
+
+function syncRegions(){
+  REGIONS.length=0;
+  if(state.activeTab==='single'){
+    const l=+$('left')?.value, r=+$('right')?.value;
+    if(Number.isFinite(l)&&Number.isFinite(r)&&r>l)REGIONS.push([l,r,'#2563eb',$('calcMode').value==='ptco'?'(220)+(202)':'Single peak']);
+  }else if(state.activeTab==='deconv'){
+    const l=+$('deconvLeft')?.value, r=+$('deconvRight')?.value;
+    if(Number.isFinite(l)&&Number.isFinite(r)&&r>l)REGIONS.push([l,r,'#0d9488','Deconv window']);
+  }else if(state.activeTab==='multi'&&$('peakRows')){
+    [...$('peakRows').rows].forEach((tr,idx)=>{
+      const inp=tr.querySelectorAll('input');
+      const l=+inp[1]?.value, r=+inp[2]?.value;
+      if(Number.isFinite(l)&&Number.isFinite(r)&&r>l)REGIONS.push([l,r,SUB_COLORS[idx%SUB_COLORS.length],inp[0]?.value||`Peak ${idx+1}`]);
+    });
+  }
+  if($('legend')){
+    $('legend').innerHTML=REGIONS.map(([a,b,col,lbl])=>`<span><i class="dot" style="background:${col}"></i>${escapeHTML(lbl)} (${fmt(a,2)}°–${fmt(b,2)}°)</span>`).join('');
+  }
+}
+
+let dragZoom=null;
+function draw(){
+  const c=$('chart');if(!c||!state.x.length)return;
+  const ctx=c.getContext('2d'),W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  const padL=54,padR=16,padT=24,padB=30,pw=W-padL-padR,ph=H-padT-padB;
+  ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;
+  for(let j=0;j<5;j++){const yy=padT+j*ph/4;ctx.beginPath();ctx.moveTo(padL,yy);ctx.lineTo(W-padR,yy);ctx.stroke();}
+  const [l,r]=range();
+  const isSqrt=$('sqrt')&&$('sqrt').checked;
+  let ymin=Infinity,ymax=-Infinity;
+  const visIdx=[];
+  for(let i=0;i<state.x.length;i++){
+    if(state.x[i]<l||state.x[i]>r)continue;
+    visIdx.push(i);
+    const v=isSqrt?Math.sqrt(Math.max(0,state.y[i])):state.y[i];
+    if(v<ymin)ymin=v;if(v>ymax)ymax=v;
+  }
+  if(!visIdx.length)return;
+  const X=v=>padL+(v-l)/(r-l||1)*pw;
+  const Y=v=>(H-padB)-(v-ymin)/(ymax-ymin||1)*ph;
+
+  if($('showRegions')&&$('showRegions').checked){
+    for(const [a,b,color] of REGIONS){
+      if(b>=l&&a<=r){
+        const x1=Math.max(padL,X(a)), x2=Math.min(W-padR,X(b));
+        ctx.fillStyle=color+'1a';
+        ctx.fillRect(x1,padT,Math.max(1,x2-x1),ph);
+        ctx.save();ctx.setLineDash([5,4]);ctx.strokeStyle=color;ctx.lineWidth=1.3;
+        ctx.beginPath();
+        if(a>=l&&a<=r){ctx.moveTo(X(a),padT);ctx.lineTo(X(a),H-padB);}
+        if(b>=l&&b<=r){ctx.moveTo(X(b),padT);ctx.lineTo(X(b),H-padB);}
+        ctx.stroke();ctx.restore();
+      }
+    }
+  }
+
+  ctx.strokeStyle='#2563eb';ctx.lineWidth=1.4;ctx.beginPath();
+  visIdx.forEach((i,k)=>{
+    const v=isSqrt?Math.sqrt(Math.max(0,state.y[i])):state.y[i];
+    if(k)ctx.lineTo(X(state.x[i]),Y(v));else ctx.moveTo(X(state.x[i]),Y(v));
+  });
+  ctx.stroke();
+
+  if(dragZoom){
+    const x1=Math.min(dragZoom.x0,dragZoom.x1), x2=Math.max(dragZoom.x0,dragZoom.x1);
+    ctx.fillStyle='#2563eb26';ctx.fillRect(x1,padT,x2-x1,ph);
+    ctx.strokeStyle='#2563eb';ctx.lineWidth=1;ctx.strokeRect(x1,padT,x2-x1,ph);
+  }
+
+  ctx.fillStyle='#607086';ctx.font='12px Segoe UI,sans-serif';
+  for(let t=0;t<=5;t++){
+    const ang=l+(r-l)*t/5;
+    ctx.fillText(ang.toFixed(1)+'°',padL+pw*t/5-(t===5?32:12),H-9);
+  }
+  ctx.fillText(isSqrt?'√Intensity':'Intensity',6,18);
+  ctx.fillText(ymax.toFixed(0),4,padT+10);
+  ctx.fillText(ymin.toFixed(0),4,H-padB);
+}
+
+(function bindChartZoom(){
+  const c=$('chart');if(!c)return;
+  const padL=54,padR=16;
+  const toCanvasX=e=>{
+    const rect=c.getBoundingClientRect();
+    if(!rect||!rect.width)return padL;
+    return (e.clientX-rect.left)*(c.width/rect.width);
+  };
+  const xTo2Theta=cx=>{
+    const [l,r]=range(), pw=c.width-padL-padR;
+    return l+Math.max(0,Math.min(1,(cx-padL)/pw))*(r-l);
+  };
+  c.addEventListener('mousedown',e=>{
+    if(!state.x.length)return;
+    const cx=toCanvasX(e);
+    dragZoom={x0:cx,x1:cx};
+  });
+  window.addEventListener('mousemove',e=>{
+    if(!dragZoom)return;
+    dragZoom.x1=toCanvasX(e);
+    draw();
+  });
+  window.addEventListener('mouseup',()=>{
+    if(!dragZoom)return;
+    const dx=Math.abs(dragZoom.x1-dragZoom.x0);
+    if(dx>10){
+      const a=xTo2Theta(Math.min(dragZoom.x0,dragZoom.x1));
+      const b=xTo2Theta(Math.max(dragZoom.x0,dragZoom.x1));
+      if(b-a>0.1)state.zoom=[a,b];
+    }
+    dragZoom=null;
+    draw();
+  });
+  c.addEventListener('dblclick',()=>{state.zoom=null;draw();});
+})();
+
+// ==================== EXISTING SINGLE-PEAK & SNIP ANALYSIS (BACKWARD COMPATIBLE) ====================
+function baselineAt(x,a,b,ya,yb){return ya+(yb-ya)*(x-a)/(b-a);}
+function trapArea(arr){let area=0;for(let i=1;i<arr.length;i++)area+=0.5*(arr[i-1].z+arr[i].z)*(arr[i].x-arr[i-1].x);return area;}
+function trapXY(xs,ys){let area=0;for(let i=1;i<xs.length;i++)area+=0.5*(ys[i-1]+ys[i])*(xs[i]-xs[i-1]);return area;}
+function crossing(x1,y1,x2,y2,level){if(y2===y1)return(x1+x2)/2;return x1+(level-y1)*(x2-x1)/(y2-y1);}
+
+function readScherrerParams(){
+  const K=+$('K').value,lambda=+$('lambda').value,inst=+$('inst').value;
+  if(!(K>0&&K<=2))throw Error('Shape factor K must be in (0, 2]');
+  if(!(lambda>0&&lambda<100))throw Error('Wavelength λ must be a positive number in 0–100 Å');
+  if(!Number.isFinite(inst)||inst<0)throw Error('Instrumental broadening must be finite and nonnegative');
+  return{K,lambda,inst,widthMode:$('mode').value,broadeningModel:$('broadeningModel').value};
+}
+
+function scherrerFromWidth(peakDeg,fwhmDeg,integralDeg,params){
+  const p=params||readScherrerParams();
+  const widthDeg=p.widthMode==='integral'?integralDeg:fwhmDeg;
+  let correctedDeg=widthDeg, correction='Uncorrected';
+  if(p.inst>0){
+    if(p.broadeningModel==='cauchy'){
+      correctedDeg=widthDeg-p.inst;
+      correction='Linear subtraction (Cauchy profile)';
+    }else{
+      correctedDeg=Math.sqrt(widthDeg*widthDeg-p.inst*p.inst);
+      correction='Quadratic subtraction (Gaussian profile)';
+    }
+    if(!(correctedDeg>0))throw Error('Instrumental broadening ≥ measured peak width; cannot obtain a valid sample broadening');
+  }
+  const betaRad=correctedDeg*Math.PI/180, thetaRad=peakDeg*Math.PI/360;
+  if(!(thetaRad>0&&thetaRad<Math.PI/2))throw Error('Peak position 2θ must be within (0°, 180°)');
+  const D=p.K*p.lambda/(betaRad*Math.cos(thetaRad))/10;
+  return{widthDeg,correctedDeg,correction,D};
+}
+
 function analyze(a,b){
   if(!Number.isFinite(a)||!Number.isFinite(b)||b<=a)throw Error('Peak-region bounds must be finite, with right > left');
   if(!state.x.length)throw Error('Import XRD data first');
@@ -78,18 +751,29 @@ function analyze(a,b){
   const arr=ia.map(i=>({x:state.x[i],z:state.y[i]-baselineAt(state.x[i],state.x[first],state.x[last],ya,yb)}));
   const peak=arr.reduce((m,v)=>v.z>m.z?v:m,arr[0]);if(!(peak.z>0))throw Error('No valid peak above the endpoint baseline in the region');
   const pi=arr.indexOf(peak),max=peak.z,half=max/2;let lo=null,hi=null;
-  for(let i=pi;i>0;i--)if(arr[i-1].z<=half&&arr[i].z>=half){lo=crossing(arr[i-1].x,arr[i-1].z,arr[i].x,arr[i].z,half);break}
-  for(let i=pi;i<arr.length-1;i++)if(arr[i].z>=half&&arr[i+1].z<=half){hi=crossing(arr[i].x,arr[i].z,arr[i+1].x,arr[i+1].z,half);break}
+  for(let i=pi;i>0;i--)if(arr[i-1].z<=half&&arr[i].z>=half){lo=crossing(arr[i-1].x,arr[i-1].z,arr[i].x,arr[i].z,half);break;}
+  for(let i=pi;i<arr.length-1;i++)if(arr[i].z>=half&&arr[i+1].z<=half){hi=crossing(arr[i].x,arr[i].z,arr[i+1].x,arr[i+1].z,half);break;}
   if(lo===null||hi===null||hi<=lo)throw Error('FWHM crossings incomplete: widen the region or check background/peak overlap');
   const fwhm=hi-lo,area=trapArea(arr),integralBreadth=area/max;
-  const residual=Math.sqrt(arr.reduce((s,v)=>s+(v.z-max*Math.exp(-.5*((v.x-peak.x)/(fwhm/2.355))**2))**2,0)/arr.length),snr=max/(residual||1),ka2=fwhm/.19;
-  const K=+$('K').value,lambda=+$('lambda').value,inst=+$('inst').value;if(!(K>0&&K<=2))throw Error('Shape factor K must be in (0, 2]');if(!(lambda>0&&lambda<100))throw Error('Wavelength λ must be a positive number in 0–100 Å');if(!Number.isFinite(inst)||inst<0)throw Error('Instrumental broadening must be finite and nonnegative');
-  const widthDeg=$('mode').value==='integral'?integralBreadth:fwhm;let correctedDeg=widthDeg,correction='Uncorrected';
-  if(inst>0){if($('broadeningModel').value==='cauchy')correctedDeg=widthDeg-inst;else correctedDeg=Math.sqrt(widthDeg*widthDeg-inst*inst);if(!(correctedDeg>0))throw Error('Instrumental broadening ≥ measured peak width; cannot obtain a valid sample broadening');correction=$('broadeningModel').value==='cauchy'?'Linear subtraction (Cauchy profile)':'Quadratic subtraction (Gaussian profile)'}
-  const betaRad=correctedDeg*Math.PI/180,thetaRad=peak.x*Math.PI/360;if(!(thetaRad>0&&thetaRad<Math.PI/2))throw Error('Peak position 2θ must be within (0°, 180°)');const Dnm=K*lambda/(betaRad*Math.cos(thetaRad))/10;
-  return{peak:peak.x,fwhm,area,integralBreadth,base:(ya+yb)/2,max,snr,ka2,D:Dnm,widthDeg,correctedDeg,correction,lo,hi}
+  const residual=Math.sqrt(arr.reduce((s,v)=>s+(v.z-max*Math.exp(-0.5*((v.x-peak.x)/(fwhm/2.355))**2))**2,0)/arr.length),snr=max/(residual||1),ka2=fwhm/0.19;
+  const sc=scherrerFromWidth(peak.x,fwhm,integralBreadth);
+  return{peak:peak.x,fwhm,area,integralBreadth,base:(ya+yb)/2,max,snr,ka2,D:sc.D,widthDeg:sc.widthDeg,correctedDeg:sc.correctedDeg,correction:sc.correction,lo,hi};
 }
-function snipBaseline(ys,wmax,niter){niter=niter||8;const n=ys.length;let b=ys.slice();for(let it=0;it<niter;it++){for(let w=1;w<=wmax;w++){const nb=b.slice();for(let i=w;i<n-w;i++){const a=0.5*(b[i-w]+b[i+w]);if(nb[i]>a)nb[i]=a}b=nb}}const s=Math.max(1,Math.floor(wmax/4));const out=new Array(n);for(let i=0;i<n;i++){let lo=Math.max(0,i-s),hi=Math.min(n-1,i+s),sum=0,c=0;for(let j=lo;j<=hi;j++){sum+=b[j];c++}out[i]=sum/c}return out}
+
+function snipBaseline(ys,wmax,niter){
+  niter=niter||8;const n=ys.length;let b=ys.slice();
+  for(let it=0;it<niter;it++){
+    for(let w=1;w<=wmax;w++){
+      const nb=b.slice();
+      for(let i=w;i<n-w;i++){const a=0.5*(b[i-w]+b[i+w]);if(nb[i]>a)nb[i]=a;}
+      b=nb;
+    }
+  }
+  const s=Math.max(1,Math.floor(wmax/4)),out=new Array(n);
+  for(let i=0;i<n;i++){let lo=Math.max(0,i-s),hi=Math.min(n-1,i+s),sum=0,c=0;for(let j=lo;j<=hi;j++){sum+=b[j];c++;}out[i]=sum/c;}
+  return out;
+}
+
 function analyzeSNIP(a,b){
   if(!Number.isFinite(a)||!Number.isFinite(b)||b<=a)throw Error('Peak-region bounds must be finite, with right > left');
   if(!state.x.length)throw Error('Import XRD data first');
@@ -101,27 +785,1203 @@ function analyzeSNIP(a,b){
   const base=snipBaseline(ys,wmax);const sub=ys.map((v,i)=>v-base[i]);
   let pi=0;for(let i=1;i<sub.length;i++)if(sub[i]>sub[pi])pi=i;const max=sub[pi];if(!(max>0))throw Error('No valid peak above the SNIP baseline in the region');
   const half=max/2;let li=pi;while(li>0&&sub[li-1]>=half)li--;let ri=pi;while(ri<sub.length-1&&sub[ri+1]>=half)ri++;
-  const crossL=i=>{const d=sub[i]-sub[i-1];return d?(xs[i-1]+(half-sub[i-1])*(xs[i]-xs[i-1])/d):xs[i]};
-  const crossR=j=>{const d=sub[j+1]-sub[j];return d?(xs[j]+(half-sub[j])*(xs[j+1]-xs[j])/d):xs[j]};
+  const crossL=i=>{const d=sub[i]-sub[i-1];return d?(xs[i-1]+(half-sub[i-1])*(xs[i]-xs[i-1])/d):xs[i];};
+  const crossR=j=>{const d=sub[j+1]-sub[j];return d?(xs[j]+(half-sub[j])*(xs[j+1]-xs[j])/d):xs[j];};
   if(li===0||ri===sub.length-1)throw Error('Incomplete FWHM crossings: widen the region');
-  const fwhm=crossR(ri)-crossL(li),area=max*fwhm*Math.sqrt(Math.PI/(4*Math.log(2)));
-  const residual=Math.sqrt(sub.reduce((s,v,i)=>s+(v-max*Math.exp(-.5*((xs[i]-xs[pi])/(fwhm/2.355))**2))**2,0)/sub.length),snr=max/(residual||1),ka2=fwhm/.19;
-  const K=+$('K').value,lambda=+$('lambda').value,inst=+$('inst').value;
-  if(!(K>0&&K<=2))throw Error('Shape factor K must be in (0, 2]');if(!(lambda>0&&lambda<100))throw Error('Wavelength λ must be a positive number in 0–100 Å');if(!Number.isFinite(inst)||inst<0)throw Error('Instrumental broadening must be finite and nonnegative');
-  const integralBreadth=area/max;const widthDeg=$('mode').value==='integral'?integralBreadth:fwhm;let correctedDeg=widthDeg,correction='Uncorrected';
-  if(inst>0){if($('broadeningModel').value==='cauchy')correctedDeg=widthDeg-inst;else correctedDeg=Math.sqrt(widthDeg*widthDeg-inst*inst);if(!(correctedDeg>0))throw Error('Instrumental broadening ≥ measured peak width; cannot obtain a valid sample broadening');correction=$('broadeningModel').value==='cauchy'?'Linear subtraction (Cauchy profile)':'Quadratic subtraction (Gaussian profile)'}
-  const betaRad=correctedDeg*Math.PI/180,thetaRad=xs[pi]*Math.PI/360;if(!(thetaRad>0&&thetaRad<Math.PI/2))throw Error('Peak position 2θ must be within (0°, 180°)');const Dnm=K*lambda/(betaRad*Math.cos(thetaRad))/10;
-  return{peak:xs[pi],fwhm,area,integralBreadth,base:base[pi],max,snr,ka2,D:Dnm,widthDeg,correctedDeg,correction,lo:crossL(li),hi:crossR(ri)}
+  const fwhm=crossR(ri)-crossL(li),area=max*fwhm*SQRT_PI_4LN2;
+  const residual=Math.sqrt(sub.reduce((s,v,i)=>s+(v-max*Math.exp(-0.5*((xs[i]-xs[pi])/(fwhm/2.355))**2))**2,0)/sub.length),snr=max/(residual||1),ka2=fwhm/0.19;
+  const integralBreadth=area/max;
+  const sc=scherrerFromWidth(xs[pi],fwhm,integralBreadth);
+  return{peak:xs[pi],fwhm,area,integralBreadth,base:base[pi],max,snr,ka2,D:sc.D,widthDeg:sc.widthDeg,correctedDeg:sc.correctedDeg,correction:sc.correction,lo:crossL(li),hi:crossR(ri)};
 }
-function ptcoResultHTML(r,Demp,C){const cls=r.snr>=15?'good':r.snr>=10?'warnc':'bad';return `<div class="result"><b>PtCo empirical calculation (220 peak integral → crystallite size)</b><table><tr><th>Metric</th><th>Result</th><th>Note</th></tr><tr><td>Peak 2θ / θ</td><td class="val">${fmt(r.peak,4)}° / ${fmt(r.peak/2,4)}°</td><td>PtCo L1₀ (220)</td></tr><tr><td>Net peak area (Gaussian integral)</td><td class="val">${fmt(r.area,2)}</td><td>SNIP baseline + Gaussian width approximation</td></tr><tr><td>FWHM / integral breadth</td><td class="val">${fmt(r.fwhm,4)}° / ${fmt(r.integralBreadth,4)}°</td><td>Kα₂ is not stripped; use corrected input</td></tr><tr><td>SNR</td><td class="val">${fmt(r.snr,1)}</td><td class="${cls}">${r.snr>=15?'reliable':r.snr>=10?'acceptable':'weak'}</td></tr><tr><td>Scherrer D (β from ${$('mode').value==='integral'?'integral breadth':'FWHM'})</td><td class="val">${fmt(r.D,2)} nm</td><td>${r.correction}</td></tr><tr><td>Empirical size D × C</td><td class="val">${fmt(Demp,2)} nm</td><td>C = ${fmt(C,2)}(pending TEM calibration)</td></tr></table><div class="small" style="margin-top:7px">Local SNIP baseline ${fmt(r.base,1)} counts · residual σ ${fmt(r.max/r.snr,1)} · (220) is weak and broad; its value is strongly affected by microstrain/stacking faults and can bias the size estimate. Final crystallite size should be based on (111) and TEM.</div></div>`}
-function resultHTML(r){const cls=r.snr>=15?'good':r.snr>=10?'warnc':'bad';return `<div class="result"><b>Calculation result</b><table><tr><th>Metric</th><th>Result</th><th>Assessment</th></tr><tr><td>Peak 2θ / θ</td><td class="val">${fmt(r.peak,4)}° / ${fmt(r.peak/2,4)}°</td><td>θ=2θ/2</td></tr><tr><td>Net peak area</td><td class="val">${fmt(r.area,2)}</td><td>${$('calcMode').value==='standard'?'Endpoint baseline + trapezoidal integration':'SNIP baseline + Gaussian width approximation'}</td></tr><tr><td>FWHM / integral breadth</td><td class="val">${fmt(r.fwhm,4)}° / ${fmt(r.integralBreadth,4)}°</td><td>Kα₂ is not stripped; use corrected input</td></tr><tr><td>βsample</td><td class="val">${fmt(r.correctedDeg,4)}° = ${fmt(r.correctedDeg*Math.PI/180,6)} rad</td><td>${r.correction}</td></tr><tr><td>SNR</td><td class="val">${fmt(r.snr,1)}</td><td class="${cls}">${r.snr>=15?'reliable':r.snr>=10?'acceptable':'weak; consider (111)'}</td></tr><tr><td>Scherrer D</td><td class="val">${fmt(r.D,2)} nm</td><td>Coherently diffracting domain size; not equal to particle size</td></tr></table><div class="small" style="margin-top:7px">Endpoint baseline avg ${fmt(r.base,1)} counts · residual σ ${fmt(r.max/r.snr,1)} · Input doublet correction must be performed before analysis</div></div>`}
-$('drop').onclick=()=>$('file').click();$('file').onchange=e=>{invalidate();const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const r=parse(rd.result);state.x=r.x;state.y=r.y;state.name=f.name;state.fmt=(f.name.split('.').pop()||'TXT').toUpperCase();onLoaded()}catch(err){msg(err.message,'err')}};rd.readAsText(f)};for(const ev of ['dragover','dragenter'])$('drop').addEventListener(ev,e=>{e.preventDefault()});$('drop').addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f){invalidate();const r=new FileReader();r.onload=()=>{try{const d=parse(r.result);state.x=d.x;state.y=d.y;state.name=f.name;state.fmt='DROP';onLoaded()}catch(err){msg(err.message,'err')}};r.readAsText(f)}});
-$('reset').onclick=()=>{state.zoom=null;draw()};$('sqrt').onchange=draw;$('showRegions').onchange=draw;$('auto').onclick=()=>{invalidate();let i=state.y.reduce((best,v,j)=>v>state.y[best]?j:best,0);let p=state.x[i];$('left').value=Math.max(state.x[0],p-3).toFixed(2);$('right').value=Math.min(state.x.at(-1),p+3).toFixed(2);msg('Peak region centered on the strongest peak','ok')};$('calcMode').onchange=()=>{const v=$('calcMode').value,ptco=v==='ptco';$('cptcoField').style.display=ptco?'flex':'none';$('ptcoNote').classList.toggle('hidden',!ptco);if(ptco){$('left').value=66;$('right').value=71;$('mode').value='integral';msg('Switched to PtCo empirical mode: analyzing (220) by default (66°–71°), width set to integral breadth','ok')}else{msg('Switched to '+(v==='optimized'?'optimized Scherrer (SNIP baseline + Gaussian width approximation)':'standard Scherrer (endpoint linear baseline)')+' mode','ok')}};
-$('calc').onclick=()=>{try{invalidate();const m=$('calcMode').value,l=+$('left').value,r=+$('right').value;const res=m==='standard'?analyze(l,r):analyzeSNIP(l,r);let C=1;if(m==='ptco'){C=+$('cptco').value;if(!Number.isFinite(C)||C<=0)throw Error('Calibration factor must be finite and positive');}$('singleResult').innerHTML=m==='ptco'?ptcoResultHTML(res,res.D*C,C):resultHTML(res);saveResult({method:m,settings:analysisSettings(),peaks:[{label:'selected peak',...res,calibration_factor:C,empirical_size_nm:res.D*C}],units:{angle:'degree 2theta',size:'nm',width:'degree 2theta'}});}catch(e){invalidate();msg(e.message,'err')}};
-$('singleTab').onclick=()=>{$('singlePanel').classList.remove('hidden');$('multiPanel').classList.add('hidden')};$('multiTab').onclick=()=>{$('singlePanel').classList.add('hidden');$('multiPanel').classList.remove('hidden')};
-function addRow(label='Peak',l=39,r=43.5){const tr=document.createElement('tr');tr.innerHTML=`<td><input value="${escapeHTML(label)}" style="min-width:90px"></td><td><input type="number" value="${l}" step=".05"></td><td><input type="number" value="${r}" step=".05"></td><td><button class="remove">Remove</button></td>`;tr.querySelector('.remove').onclick=()=>{invalidate();tr.remove();};$('peakRows').appendChild(tr)}$('add').onclick=()=>{invalidate();addRow();};$('ptco').onclick=()=>{invalidate(); $('peakRows').innerHTML='';addRow('(111)',39,43.5);addRow('(200)',45,48.8);addRow('(220)',65,72);msg('Loaded the three PtCo fundamental reflections','ok')};
-$('multiCalc').onclick=()=>{invalidate();const rows=[...$('peakRows').rows];if(!rows.length){msg('Add a peak region first','warn');return}try{const peaks=rows.map(tr=>{const inp=tr.querySelectorAll('input');const result=$('calcMode').value==='standard'?analyze(+inp[1].value,+inp[2].value):analyzeSNIP(+inp[1].value,+inp[2].value);return{label:inp[0].value,...result};});const wh=williamsonHall(peaks,+$('K').value,+$('lambda').value);$('multiResult').innerHTML='<div class="result"><b>Multi-peak size results</b><table><tr><th>Peak</th><th>Position</th><th>FWHM</th><th>SNR</th><th>D (nm)</th></tr>'+peaks.map(r=>`<tr><td>${escapeHTML(r.label)}</td><td>${fmt(r.peak,3)}°</td><td>${fmt(r.fwhm,3)}°</td><td>${fmt(r.snr,1)}</td><td class="val">${fmt(r.D,2)}</td></tr>`).join('')+`</table><p>Williamson–Hall: ${wh.reason}. ${wh.D_nm===null?'':`D = ${fmt(wh.D_nm,2)} nm · strain ε = ${fmt(wh.strain,6)} · R² = ${fmt(wh.r2,4)}`}</p><p class="small">Isotropic uniform-deformation approximation: β cosθ = Kλ/D + 4ε sinθ. Use at least three distinct clean reflections of one phase, consistent widths and instrumental corrections. Peak overlap and anisotropy require review.</p></div>`;if(wh.points)drawWH(wh);saveResult({method:'multi_peak',settings:analysisSettings(),peaks,williamson_hall:wh,units:{angle:'degree 2theta',size:'nm',strain:'dimensionless',width:'degree 2theta'}});}catch(e){invalidate();msg(e.message,'err')}};
-function analysisSettings(){return{shape_factor_K:Number($('K').value),wavelength_A:Number($('lambda').value),width_mode:$('mode').value,instrument_width_deg:Number($('inst').value),instrument_profile:$('broadeningModel').value,background_mode:$('calcMode').value,kalpha2_stripped:false};}
+
+// ==================== LINEAR ALGEBRA HELPERS ====================
+function solveLinearSystem(A,b){
+  const n=b.length;
+  const M=A.map((row,i)=>row.slice().concat([b[i]]));
+  for(let col=0;col<n;col++){
+    let piv=col, maxVal=Math.abs(M[col][col]);
+    for(let row=col+1;row<n;row++){
+      const v=Math.abs(M[row][col]);
+      if(v>maxVal){maxVal=v;piv=row;}
+    }
+    if(maxVal<1e-18)return null;
+    if(piv!==col){const tmp=M[col];M[col]=M[piv];M[piv]=tmp;}
+    const diag=M[col][col];
+    for(let row=col+1;row<n;row++){
+      const f=M[row][col]/diag;
+      if(!f)continue;
+      for(let k=col;k<=n;k++)M[row][k]-=f*M[col][k];
+    }
+  }
+  const x=new Array(n);
+  for(let i=n-1;i>=0;i--){
+    let s=M[i][n];
+    for(let j=i+1;j<n;j++)s-=M[i][j]*x[j];
+    x[i]=s/M[i][i];
+    if(!Number.isFinite(x[i]))return null;
+  }
+  return x;
+}
+
+// ==================== MULTI-PEAK NONLINEAR LM DECONVOLUTION ====================
+function evalPV(x,h,mu,w,eta){
+  const r=2*(x-mu)/w;
+  const g=Math.exp(-Math.LN2*r*r);
+  const l=1/(1+r*r);
+  return h*((1-eta)*g+eta*l);
+}
+function pvIntegralBreadth(w,eta){return w*((1-eta)*SQRT_PI_4LN2+eta*HALF_PI);}
+function pvArea(h,w,eta){return h*pvIntegralBreadth(w,eta);}
+
+function autoFindPeaks(xs,ys,maxPeaks=6){
+  const n=xs.length;
+  if(n<7)return [{label:'Peak 1',mu:xs[Math.floor(n/2)],fwhm:0.8,shift:1.5}];
+  const step=(xs[n-1]-xs[0])/(n-1);
+  // Smooth intensity with 2-pass triangular moving average
+  const hw=Math.max(2,Math.min(12,Math.round(0.22/(step||0.02))));
+  const smooth=arr=>{
+    const out=new Array(n);
+    for(let i=0;i<n;i++){
+      let s=0,wsum=0;
+      const lo=Math.max(0,i-hw),hi=Math.min(n-1,i+hw);
+      for(let j=lo;j<=hi;j++){const wt=hw+1-Math.abs(j-i);s+=arr[j]*wt;wsum+=wt;}
+      out[i]=s/wsum;
+    }
+    return out;
+  };
+  const s1=smooth(smooth(ys));
+  // Smoothed negative 2nd derivative: -d²I/dx²
+  const d2=new Array(n).fill(0);
+  const kstep=Math.max(1,Math.floor(hw/2));
+  for(let i=kstep;i<n-kstep;i++){
+    const dx=xs[i+kstep]-xs[i];
+    d2[i]=-(s1[i+kstep]-2*s1[i]+s1[i-kstep])/(dx*dx||1);
+  }
+  const d2s=smooth(d2);
+  let yMin=Infinity,yMax=-Infinity,d2Max=0;
+  for(let i=0;i<n;i++){
+    if(s1[i]<yMin)yMin=s1[i];
+    if(s1[i]>yMax)yMax=s1[i];
+    if(d2s[i]>d2Max)d2Max=d2s[i];
+  }
+  const ySpan=yMax-yMin||1;
+  const cand=[];
+  const minSep=Math.max(0.45,step*6);
+  for(let i=2;i<n-2;i++){
+    if(d2s[i]>d2s[i-1]&&d2s[i]>=d2s[i+1]&&d2s[i]>d2Max*0.09&&(s1[i]-yMin)>ySpan*0.06){
+      cand.push({idx:i,x:xs[i],score:d2s[i],y:s1[i]-yMin});
+    }
+  }
+  cand.sort((a,b)=>b.score-a.score);
+  const picked=[];
+  for(const c of cand){
+    if(picked.every(p=>Math.abs(p.x-c.x)>=minSep)){
+      picked.push(c);
+      if(picked.length>=maxPeaks)break;
+    }
+  }
+  if(!picked.length){
+    let bi=0;for(let i=1;i<n;i++)if(s1[i]>s1[bi])bi=i;
+    picked.push({idx:bi,x:xs[bi],score:1,y:s1[bi]-yMin});
+  }
+  picked.sort((a,b)=>a.x-b.x);
+  return picked.map((p,idx)=>({
+    label:`Peak ${idx+1}`,
+    mu:Number(p.x.toFixed(3)),
+    fwhm:Number(Math.min(2.5,Math.max(0.4,(xs[n-1]-xs[0])/(picked.length*4.5))).toFixed(2)),
+    shift:1.5
+  }));
+}
+
+function tetragonalLattice(peaks,lambdaA){
+  // Detect (220)+(202) or (200)+(002) pair and infer tetragonal a, c, c/a
+  if(!peaks||peaks.length<2)return null;
+  const dOf=deg=>lambdaA/(2*Math.sin(deg*Math.PI/360));
+  const byLbl=rx=>peaks.find(p=>rx.test(String(p.label||'')));
+  let p220=byLbl(/\(\s*220\s*\)|\b220\b/i), p202=byLbl(/\(\s*202\s*\)|\b202\b/i);
+  let p200=byLbl(/\(\s*200\s*\)|\b200\b/i), p002=byLbl(/\(\s*002\s*\)|\b002\b/i);
+
+  // Fallback by angle range if labels are generic and exactly 2 peaks
+  if(!(p220&&p202)&&!(p200&&p002)&&peaks.length===2){
+    const s=[...peaks].sort((a,b)=>a.peak-b.peak);
+    if(s[0].peak>65&&s[0].peak<70.5&&s[1].peak>69&&s[1].peak<73.5&&s[1].peak-s[0].peak>0.6){
+      p220=s[0];p202=s[1];
+    }else if(s[0].peak>45&&s[0].peak<48.5&&s[1].peak>47.5&&s[1].peak<51.5&&s[1].peak-s[0].peak>0.6){
+      p200=s[0];p002=s[1];
+    }
+  }
+  if(p220&&p202&&p202.peak>p220.peak){
+    const d220=dOf(p220.peak), d202=dOf(p202.peak);
+    const a=2*Math.SQRT2*d220;
+    const invC2=(1/(d202*d202) - 0.5/(d220*d220))/4;
+    if(invC2>0){
+      const c=1/Math.sqrt(invC2);
+      return{pair:'(220)+(202)',a,c,cOverA:c/a,d1:d220,d2:d202};
+    }
+  }
+  if(p200&&p002&&p002.peak>p200.peak){
+    const d200=dOf(p200.peak), d002=dOf(p002.peak);
+    const a=2*d200, c=2*d002;
+    return{pair:'(200)+(002)',a,c,cOverA:c/a,d1:d200,d2:d002};
+  }
+  return null;
+}
+
+function fitMultiPeakLM(xs,ys,seeds,options={}){
+  // Analytic-Jacobian, multi-start, box-constrained Levenberg-Marquardt fitter
+  // Supports 1-6 peaks (pvoigt / gaussian / lorentzian) + joint linear or SNIP baseline.
+  const n=xs.length, K=seeds.length;
+  if(n<6)throw Error('At least 6 points are required for nonlinear deconvolution');
+  if(K<1||K>6)throw Error('Number of sub-peaks must be between 1 and 6');
+
+  const shape=options.shape||'pvoigt';       // 'pvoigt' | 'gaussian' | 'lorentzian'
+  const baseMode=options.baseline||'linear'; // 'linear' | 'snip'
+  const fitEta=shape==='pvoigt';
+  const fixedEta=shape==='lorentzian'?1:0;
+  const xMin=xs[0], xMax=xs[n-1], xMid=0.5*(xMin+xMax), xHalf=0.5*(xMax-xMin)||1;
+  const step=(xMax-xMin)/(n-1)||0.02;
+  const ts=xs.map(x=>(x-xMid)/xHalf);
+
+  let fixedBase=null, yWork=ys;
+  if(baseMode==='snip'){
+    const wmax=Math.max(8,Math.round(3.0/(step||0.01)));
+    fixedBase=snipBaseline(ys,wmax);
+    yWork=ys.map((v,i)=>v-fixedBase[i]);
+  }
+
+  let yMin=Infinity,yMax=-Infinity;
+  for(let i=0;i<n;i++){if(yWork[i]<yMin)yMin=yWork[i];if(yWork[i]>yMax)yMax=yWork[i];}
+  const ySpan=Math.max(1e-6,yMax-yMin);
+  const edgeLo=0.5*(yWork[0]+yWork[Math.min(2,n-1)]);
+  const edgeHi=0.5*(yWork[n-1]+yWork[Math.max(0,n-3)]);
+  const b0Init=baseMode==='linear'?0.5*(edgeLo+edgeHi):0;
+  const b1Init=baseMode==='linear'?0.5*(edgeHi-edgeLo):0;
+
+  const pPerPeak=fitEta?4:3;
+  const nBase=baseMode==='linear'?2:0;
+  const P=K*pPerPeak+nBase;
+
+  const lo=new Array(P), hi=new Array(P);
+  for(let k=0;k<K;k++){
+    const o=k*pPerPeak;
+    const sd=seeds[k];
+    const shift=Number.isFinite(sd.shift)&&sd.shift>0?sd.shift:Math.max(1.5,(xMax-xMin)*0.35);
+    const muMin=sd.muMin!==undefined?Math.max(xMin,sd.muMin):Math.max(xMin,sd.mu-shift);
+    const muMax=sd.muMax!==undefined?Math.min(xMax,sd.muMax):Math.min(xMax,sd.mu+shift);
+    const wMin=sd.wMin!==undefined?sd.wMin:Math.max(step*1.8,0.035);
+    const wMax=sd.wMax!==undefined?sd.wMax:Math.max(2.0,(xMax-xMin)*1.15);
+    lo[o]=0; hi[o]=ySpan*3.5;
+    lo[o+1]=Math.min(muMin,muMax); hi[o+1]=Math.max(muMin,muMax);
+    lo[o+2]=wMin; hi[o+2]=Math.max(wMin+0.05,wMax);
+    if(fitEta){lo[o+3]=0;hi[o+3]=1;}
+  }
+  if(nBase){
+    lo[P-2]=yMin-ySpan*1.5; hi[P-2]=yMax+ySpan*0.2;
+    lo[P-1]=-ySpan*2.5; hi[P-1]=ySpan*2.5;
+  }
+
+  const clamp=(v,j)=>v<lo[j]?lo[j]:(v>hi[j]?hi[j]:v);
+  const nearestY=mu=>{
+    let bi=0,bd=Infinity;
+    for(let i=0;i<n;i++){const d=Math.abs(xs[i]-mu);if(d<bd){bd=d;bi=i;}}
+    const baseAt=baseMode==='linear'?(b0Init+b1Init*ts[bi]):0;
+    return Math.max(ySpan*0.08,yWork[bi]-baseAt);
+  };
+
+  function evalModel(params){
+    const yhat=new Array(n);
+    const b0=nBase?params[P-2]:0, b1=nBase?params[P-1]:0;
+    let sse=0;
+    for(let i=0;i<n;i++){
+      let f=b0+b1*ts[i];
+      const xi=xs[i];
+      for(let k=0;k<K;k++){
+        const o=k*pPerPeak;
+        const h=params[o], mu=params[o+1], w=params[o+2], eta=fitEta?params[o+3]:fixedEta;
+        const r=2*(xi-mu)/w;
+        const g=Math.exp(-Math.LN2*r*r), l=1/(1+r*r);
+        f+=h*((1-eta)*g+eta*l);
+      }
+      yhat[i]=f;
+      const e=yWork[i]-f;
+      sse+=e*e;
+    }
+    return{yhat,sse};
+  }
+
+  function runSingleLM(p0,maxIter=90){
+    let p=p0.map((v,j)=>clamp(v,j));
+    let {sse}=evalModel(p);
+    let lam=1e-2;
+    const JTJ=Array.from({length:P},()=>new Array(P));
+    const JTr=new Array(P);
+    const Jrow=new Array(P);
+
+    for(let it=0;it<maxIter;it++){
+      for(let a=0;a<P;a++){JTr[a]=0;for(let b=0;b<P;b++)JTJ[a][b]=0;}
+      const b0=nBase?p[P-2]:0, b1=nBase?p[P-1]:0;
+      for(let i=0;i<n;i++){
+        const xi=xs[i];
+        let f=b0+b1*ts[i];
+        for(let k=0;k<K;k++){
+          const o=k*pPerPeak;
+          const h=p[o], mu=p[o+1], w=p[o+2], eta=fitEta?p[o+3]:fixedEta;
+          const r=2*(xi-mu)/w, r2=r*r;
+          const g=Math.exp(-Math.LN2*r2), l=1/(1+r2), l2=l*l;
+          const v=(1-eta)*g+eta*l;
+          f+=h*v;
+          Jrow[o]=v;
+          Jrow[o+1]=h*((1-eta)*(4*Math.LN2*r/w)*g + eta*(4*r/w)*l2);
+          Jrow[o+2]=h*((1-eta)*(2*Math.LN2*r2/w)*g + eta*(2*r2/w)*l2);
+          if(fitEta)Jrow[o+3]=h*(l-g);
+        }
+        if(nBase){Jrow[P-2]=1;Jrow[P-1]=ts[i];}
+        const res=yWork[i]-f;
+        for(let a=0;a<P;a++){
+          const ja=Jrow[a];
+          if(!ja)continue;
+          JTr[a]+=ja*res;
+          for(let b=a;b<P;b++)JTJ[a][b]+=ja*Jrow[b];
+        }
+      }
+      for(let a=0;a<P;a++)for(let b=0;b<a;b++)JTJ[a][b]=JTJ[b][a];
+
+      let accepted=false;
+      for(let trial=0;trial<10;trial++){
+        const A=JTJ.map((row,a)=>row.map((val,b)=>a===b?val+lam*Math.max(val,1e-6):val));
+        const dp=solveLinearSystem(A,JTr);
+        if(!dp){lam*=10;continue;}
+        const pNew=p.map((v,j)=>clamp(v+dp[j],j));
+        const ev=evalModel(pNew);
+        if(ev.sse<sse){
+          const rel=(sse-ev.sse)/(sse||1);
+          p=pNew;sse=ev.sse;
+          lam=Math.max(1e-7,lam*0.35);
+          accepted=true;
+          if(rel<1e-10)return{p,sse,iter:it+1};
+          break;
+        }else{
+          lam=Math.min(1e9,lam*4.5);
+        }
+      }
+      if(!accepted)break;
+    }
+    return{p,sse,iter:maxIter};
+  }
+
+  // Detect co-centered seed pair (e.g., bimodal same-center small+large)
+  const coCentered=K===2&&Math.abs(seeds[0].mu-seeds[1].mu)<0.25;
+  const starts=[];
+  const makeStart=(hScale,wScale,eta0,altSplit=false)=>{
+    const arr=new Array(P);
+    for(let k=0;k<K;k++){
+      const o=k*pPerPeak, sd=seeds[k];
+      let hk=sd.h!==undefined?sd.h:nearestY(sd.mu)*(coCentered?(k===0?0.6:0.4):0.85);
+      let wk=sd.fwhm||1.0;
+      if(coCentered&&altSplit){wk=k===0?wk*0.55:wk*1.65;}
+      arr[o]=hk*hScale;
+      arr[o+1]=sd.mu;
+      arr[o+2]=wk*wScale;
+      if(fitEta)arr[o+3]=sd.eta!==undefined?sd.eta:eta0;
+    }
+    if(nBase){arr[P-2]=b0Init;arr[P-1]=b1Init;}
+    return arr;
+  };
+  starts.push(makeStart(1.0,1.0,0.35,false));
+  starts.push(makeStart(0.9,0.75,0.65,coCentered));
+  starts.push(makeStart(1.05,1.25,0.15,false));
+  if(K>=2)starts.push(makeStart(0.8,1.0,0.5,true));
+
+  let best=null;
+  for(const s0 of starts){
+    const res=runSingleLM(s0,95);
+    if(!best||res.sse<best.sse)best=res;
+  }
+
+  const pBest=best.p;
+  const b0=nBase?pBest[P-2]:0, b1=nBase?pBest[P-1]:0;
+  const baseArr=xs.map((_,i)=>baseMode==='snip'?fixedBase[i]:(b0+b1*ts[i]));
+
+  const rawSub=[];
+  for(let k=0;k<K;k++){
+    const o=k*pPerPeak;
+    const h=pBest[o], mu=pBest[o+1], w=pBest[o+2], eta=fitEta?pBest[o+3]:fixedEta;
+    const area=pvArea(h,w,eta), ib=pvIntegralBreadth(w,eta);
+    const curve=xs.map(x=>evalPV(x,h,mu,w,eta));
+    rawSub.push({label:seeds[k].label||`Peak ${k+1}`,peak:mu,height:h,max:h,fwhm:w,integralBreadth:ib,eta,area,curve});
+  }
+  // Keep consistent ordering: by 2theta ascending, or narrow-first if co-centered
+  if(coCentered){
+    rawSub.sort((a,b)=>a.fwhm-b.fwhm);
+    if(seeds[0].label&&seeds[1].label){
+      const byW=[...seeds].sort((a,b)=>(a.fwhm||1)-(b.fwhm||1));
+      rawSub[0].label=byW[0].label;rawSub[1].label=byW[1].label;
+    }
+  }else{
+    rawSub.sort((a,b)=>a.peak-b.peak);
+  }
+
+  const totalNet=xs.map((_,i)=>rawSub.reduce((s,pk)=>s+pk.curve[i],0));
+  const yFit=xs.map((_,i)=>baseArr[i]+totalNet[i]);
+  const residuals=ys.map((y,i)=>y-yFit[i]);
+
+  // Fit goodness metrics
+  const yMean=ys.reduce((a,b)=>a+b,0)/n;
+  let sseFull=0, sstFull=0, wNum=0, wDen=0;
+  for(let i=0;i<n;i++){
+    const e=residuals[i];
+    sseFull+=e*e;
+    sstFull+=(ys[i]-yMean)**2;
+    const wt=1/Math.max(Math.abs(ys[i]),1);
+    wNum+=wt*e*e;
+    wDen+=wt*ys[i]*ys[i];
+  }
+  const r2=sstFull>1e-20?1-sseFull/sstFull:1;
+  const rmse=Math.sqrt(sseFull/n);
+  const rwp=wDen>1e-20?100*Math.sqrt(wNum/wDen):0;
+
+  // Area comparison: analytic sum vs fitted-baseline numerical vs traditional endpoint baseline
+  const totalFittedArea=rawSub.reduce((s,pk)=>s+pk.area,0);
+  const fittedBaselineNumericalArea=trapXY(xs,ys.map((y,i)=>y-baseArr[i]));
+  const endpointBase=xs.map(x=>baselineAt(x,xs[0],xs[n-1],ys[0],ys[n-1]));
+  const endpointBaselineArea=trapXY(xs,ys.map((y,i)=>y-endpointBase[i]));
+  const endpointDeltaPct=totalFittedArea>1e-12?((endpointBaselineArea-totalFittedArea)/totalFittedArea*100):0;
+
+  const scParams=readScherrerParams();
+  const peaks=rawSub.map(pk=>{
+    const sc=scherrerFromWidth(pk.peak,pk.fwhm,pk.integralBreadth,scParams);
+    const snr=pk.height/(rmse||1);
+    return{
+      ...pk,
+      areaFraction:totalFittedArea>1e-12?pk.area/totalFittedArea:0,
+      snr,
+      ka2:pk.fwhm/0.19,
+      D:sc.D,
+      widthDeg:sc.widthDeg,
+      correctedDeg:sc.correctedDeg,
+      correction:sc.correction,
+      base:baseArr[Math.floor(n/2)]
+    };
+  });
+
+  const lattice=tetragonalLattice(peaks,scParams.lambda);
+  const isCoCentered=peaks.length>=2&&Math.abs(peaks[0].peak-peaks[peaks.length-1].peak)<0.35;
+
+  return{
+    xs,ys,baseArr,yFit,residuals,peaks,shape,baseMode,
+    totalFittedArea,fittedBaselineNumericalArea,endpointBaselineArea,endpointDeltaPct,
+    r2,rwp,rmse,lattice,isCoCentered,
+    window:[xMin,xMax]
+  };
+}
+
+// ==================== CSD INVERSION: SPHERICAL KERNEL + TIKHONOV-NNLS + KRILL-BIRRINGER ====================
+function erfcx(x){
+  // Scaled complementary error function exp(x^2) * erfc(x), overflow-safe for all x >= 0
+  if(x<0)return 2*Math.exp(x*x)-erfcx(-x);
+  if(x>6){
+    const inv=1/(x*x);
+    return (1/(Math.sqrt(Math.PI)*x))*(1 - 0.5*inv + 0.75*inv*inv - 1.875*inv*inv*inv);
+  }
+  const t=1/(1+0.3275911*x);
+  return t*(0.254829592 + t*(-0.284496736 + t*(1.421413741 + t*(-1.453152027 + t*1.061405429))));
+}
+
+function convolvedSphericalKernel(sArr,D,instBetaS,instModel,widthMode){
+  if(!(instBetaS>1e-9))return sArr.map(s=>sphericalKernel(s,D));
+  const M=33;
+  const offsets=[], weights=[];
+  if(instModel==='cauchy'){
+    // Cauchy (Lorentzian) instrumental profile g(u) = (gamma/pi)/(u^2 + gamma^2)
+    // Integral breadth beta_s = pi * gamma; FWHM = 2 * gamma
+    const gamma=widthMode==='integral'?(instBetaS/Math.PI):(instBetaS/2);
+    // Transform u = gamma * tan(phi), phi in (-pi/2, pi/2) -> exact uniform density!
+    const dphi=Math.PI/(M+1);
+    for(let m=1;m<=M;m++){
+      const phi=-HALF_PI+m*dphi;
+      offsets.push(gamma*Math.tan(phi));
+      weights.push(1/M);
+    }
+  }else{
+    // Gaussian instrumental profile: beta_s = sqrt(2*pi)*sigma; FWHM = 2*sqrt(2*ln2)*sigma
+    const sigma=widthMode==='integral'?(instBetaS/Math.sqrt(2*Math.PI)):(instBetaS/(2*Math.sqrt(2*Math.LN2)));
+    const span=4.5*sigma, du=(2*span)/(M-1);
+    let wsum=0;
+    for(let m=0;m<M;m++){
+      const u=-span+m*du;
+      const w=Math.exp(-0.5*(u/sigma)**2)*(m===0||m===M-1?0.5:1);
+      offsets.push(u);weights.push(w);wsum+=w;
+    }
+    for(let m=0;m<M;m++)weights[m]/=wsum;
+  }
+  return sArr.map(s=>{
+    let val=0;
+    for(let m=0;m<M;m++)val+=weights[m]*sphericalKernel(s-offsets[m],D);
+    return val;
+  });
+}
+
+function solveNNLSGram(G,c,maxIter=400){
+  // Lawson-Hanson active-set NNLS for min_{x>=0} 0.5*x^T G x - c^T x
+  const m=c.length;
+  const x=new Array(m).fill(0);
+  const passive=new Array(m).fill(false);
+  const gScale=G.reduce((s,row,i)=>s+Math.abs(row[i]),0)/m || 1;
+  const tol=1e-11*Math.max(1,c.reduce((a,v)=>Math.max(a,Math.abs(v)),0));
+
+  for(let outer=0;outer<maxIter;outer++){
+    // w = c - G*x
+    let bestJ=-1, bestW=tol;
+    for(let j=0;j<m;j++){
+      if(passive[j])continue;
+      let gx=0;
+      const row=G[j];
+      for(let k=0;k<m;k++)if(x[k])gx+=row[k]*x[k];
+      const wj=c[j]-gx;
+      if(wj>bestW){bestW=wj;bestJ=j;}
+    }
+    if(bestJ<0)break;
+    passive[bestJ]=true;
+
+    for(let inner=0;inner<m*3;inner++){
+      const idx=[];
+      for(let j=0;j<m;j++)if(passive[j])idx.push(j);
+      if(!idx.length)break;
+      const p=idx.length;
+      const Gp=Array.from({length:p},(_,a)=>idx.map((j,b)=>G[idx[a]][j]+(a===b?1e-12*gScale:0)));
+      const cp=idx.map(j=>c[j]);
+      const zp=solveLinearSystem(Gp,cp);
+      if(!zp){passive[bestJ]=false;break;}
+
+      let allPos=true;
+      for(let a=0;a<p;a++)if(zp[a]<=0){allPos=false;break;}
+      if(allPos){
+        for(let j=0;j<m;j++)x[j]=0;
+        for(let a=0;a<p;a++)x[idx[a]]=zp[a];
+        break;
+      }
+      let alpha=Infinity;
+      for(let a=0;a<p;a++){
+        if(zp[a]<=0){
+          const j=idx[a], denom=x[j]-zp[a];
+          if(denom>0)alpha=Math.min(alpha,x[j]/denom);
+        }
+      }
+      if(!Number.isFinite(alpha)||alpha<=0)alpha=0;
+      for(let a=0;a<p;a++){
+        const j=idx[a];
+        x[j]=x[j]+alpha*(zp[a]-x[j]);
+        if(x[j]<=1e-13){x[j]=0;passive[j]=false;}
+      }
+    }
+  }
+  return x;
+}
+
+function quantileFromCDF(D,cdf,q){
+  if(q<=cdf[0])return D[0];
+  for(let i=1;i<D.length;i++){
+    if(cdf[i]>=q){
+      const d=cdf[i]-cdf[i-1];
+      return d>0?D[i-1]+(q-cdf[i-1])*(D[i]-D[i-1])/d:D[i];
+    }
+  }
+  return D[D.length-1];
+}
+
+function detectCSDModes(D,gV,pV){
+  // Detect modes in volume density gV(ln D) = D * f_V(D)
+  const m=D.length;
+  let gMax=0;for(const v of gV)if(v>gMax)gMax=v;
+  if(!(gMax>0))return [];
+  const raw=[];
+  for(let i=1;i<m-1;i++){
+    if(gV[i]>=gV[i-1]&&gV[i]>gV[i+1]&&gV[i]>gMax*0.08)raw.push(i);
+  }
+  if(!raw.length){
+    let bi=0;for(let i=1;i<m;i++)if(gV[i]>gV[bi])bi=i;
+    return [{D_peak:D[bi],volumeFraction:1}];
+  }
+  // Merge peaks separated by shallow valleys (> 75% of lower peak)
+  const kept=[];
+  for(const idx of raw){
+    if(!kept.length){kept.push(idx);continue;}
+    const prev=kept[kept.length-1];
+    let vMin=Infinity;
+    for(let k=prev;k<=idx;k++)if(gV[k]<vMin)vMin=gV[k];
+    if(vMin>0.75*Math.min(gV[prev],gV[idx])){
+      if(gV[idx]>gV[prev])kept[kept.length-1]=idx;
+    }else{
+      kept.push(idx);
+    }
+  }
+  // Partition bins at valley minima to estimate each mode's volume fraction
+  const cuts=[0];
+  for(let r=0;r<kept.length-1;r++){
+    let vi=kept[r], vm=Infinity;
+    for(let k=kept[r];k<=kept[r+1];k++)if(gV[k]<vm){vm=gV[k];vi=k;}
+    cuts.push(vi);
+  }
+  cuts.push(m);
+  const modes=[];
+  for(let r=0;r<kept.length;r++){
+    let frac=0;
+    for(let k=cuts[r];k<cuts[r+1];k++)frac+=pV[k];
+    if(frac>=0.04)modes.push({D_peak:D[kept[r]],volumeFraction:frac});
+  }
+  const fsum=modes.reduce((a,b)=>a+b.volumeFraction,0)||1;
+  return modes.map(md=>({D_peak:md.D_peak,volumeFraction:md.volumeFraction/fsum}));
+}
+
+function invertCSD_NNLS(sArr,iArr,options={}){
+  const n=sArr.length;
+  if(n<8)throw Error('Need at least 8 reciprocal-space points for CSD inversion');
+  const Dmin=Math.max(0.5,Number(options.Dmin)||1.0);
+  const Dmax=Math.max(Dmin*4,Number(options.Dmax)||80.0);
+  const M=options.M||60;
+  const instBetaS=Number(options.instBetaS)||0;
+  const instModel=options.instModel||'gaussian';
+  const widthMode=options.widthMode||'integral';
+  const regMode=options.regMode||'auto';
+  const noiseSigma=Number(options.noiseSigma)||0;
+
+  // Log-spaced diameter grid u = ln(D)
+  const uMin=Math.log(Dmin), uMax=Math.log(Dmax), du=(uMax-uMin)/(M-1);
+  const D=new Array(M), wTrap=new Array(M), dD=new Array(M);
+  for(let j=0;j<M;j++){
+    D[j]=Math.exp(uMin+j*du);
+    wTrap[j]=(j===0||j===M-1?0.5:1)*du;
+  }
+  for(let j=0;j<M;j++){
+    dD[j]=j===0?(D[1]-D[0])/2:(j===M-1?(D[M-1]-D[M-2])/2:0.5*(D[j+1]-D[j-1]));
+  }
+
+  // Forward matrix A[i][j] = K_conv(s_i; D_j) * wTrap[j], unknown x_j = g_V(ln D_j) >= 0
+  const cols=D.map((Dj,j)=>{
+    const col=convolvedSphericalKernel(sArr,Dj,instBetaS,instModel,widthMode);
+    const wt=wTrap[j];
+    for(let i=0;i<n;i++)col[i]*=wt;
+    return col;
+  });
+
+  // Gram matrix ATA = A^T A and rhs c = A^T y
+  const ATA=Array.from({length:M},()=>new Array(M).fill(0));
+  const c=new Array(M).fill(0);
+  for(let j=0;j<M;j++){
+    const cj=cols[j];
+    let cv=0;
+    for(let i=0;i<n;i++)cv+=cj[i]*iArr[i];
+    c[j]=cv;
+    for(let k=j;k<M;k++){
+      const ck=cols[k];
+      let s=0;
+      for(let i=0;i<n;i++)s+=cj[i]*ck[i];
+      ATA[j][k]=s;ATA[k][j]=s;
+    }
+  }
+  const traceATA=ATA.reduce((s,row,j)=>s+row[j],0)/M || 1;
+
+  // Volume/Area hybrid 2nd-order difference Tikhonov matrix:
+  // R_vol = L2^T L2 on g_V(ln D), R_area = W_A L2^T L2 W_A on g_A(ln D) ~ (D_ref/D) * g_V(ln D)
+  const Dref=Math.sqrt(Dmin*Dmax);
+  const wA=D.map(Dj=>Math.min(8,Dref/Dj)); // area weight bounded to prevent extreme ill-conditioning
+  const R=Array.from({length:M},()=>new Array(M).fill(0));
+  const addL2=(weights,scale)=>{
+    for(let k=1;k<M-1;k++){
+      const row=[[k-1,weights[k-1]],[k,-2*weights[k]],[k+1,weights[k+1]]];
+      for(const [a,va] of row)for(const [b,vb] of row)R[a][b]+=scale*va*vb;
+    }
+  };
+  const ones=new Array(M).fill(1);
+  addL2(ones,0.65);
+  addL2(wA,0.35);
+  // Gentle edge damping to avoid spurious delta mass at Dmin/Dmax boundaries
+  R[0][0]+=0.15*wA[0]*wA[0];
+  R[M-1][M-1]+=0.08;
+
+  const solveForLam=lam=>{
+    const G=ATA.map((row,a)=>row.map((v,b)=>v+lam*traceATA*R[a][b]));
+    const x=solveNNLSGram(G,c);
+    const yFit=new Array(n).fill(0);
+    for(let j=0;j<M;j++)if(x[j]>0){const cj=cols[j];for(let i=0;i<n;i++)yFit[i]+=cj[i]*x[j];}
+    let sse=0, rough=0;
+    for(let i=0;i<n;i++){const e=iArr[i]-yFit[i];sse+=e*e;}
+    for(let a=0;a<M;a++)if(x[a])for(let b=0;b<M;b++)if(x[b])rough+=x[a]*R[a][b]*x[b];
+    return{lam,x,yFit,sse,rough};
+  };
+
+  let chosen;
+  if(regMode==='low')chosen=solveForLam(4e-4);
+  else if(regMode==='medium')chosen=solveForLam(3e-3);
+  else if(regMode==='high')chosen=solveForLam(2.5e-2);
+  else{
+    // Auto selection: discrepancy-guided L-curve over log-spaced lambdas
+    const grid=[1.5e-4,4e-4,1e-3,2.8e-3,8e-3,2.5e-2,8e-2];
+    const sols=grid.map(solveForLam);
+    const yPeak=iArr.reduce((m,v)=>Math.max(m,v),0)||1;
+    const minSSE=sols[0].sse;
+    // Target SSE: slightly above minSSE or Morozov noise floor
+    const noiseSSE=noiseSigma>0?n*noiseSigma*noiseSigma*1.05:0;
+    const targetSSE=Math.max(minSSE*1.08, noiseSSE, minSSE + n*(yPeak*0.0025)**2);
+    chosen=sols[0];
+    for(const s of sols){
+      if(s.sse<=targetSSE)chosen=s;
+    }
+    // If all exceed targetSSE (very high noise), pick maximum-curvature L-curve point
+    if(chosen===sols[0]&&sols[0].sse>targetSSE){
+      let bestScore=-Infinity;
+      for(let i=1;i<sols.length-1;i++){
+        const lx0=Math.log(sols[i-1].sse+1e-20), ly0=Math.log(sols[i-1].rough+1e-20);
+        const lx1=Math.log(sols[i].sse+1e-20),   ly1=Math.log(sols[i].rough+1e-20);
+        const lx2=Math.log(sols[i+1].sse+1e-20), ly2=Math.log(sols[i+1].rough+1e-20);
+        const curv=((lx1-lx0)*(ly2-ly1)-(ly1-ly0)*(lx2-lx1));
+        if(curv>bestScore){bestScore=curv;chosen=sols[i];}
+      }
+    }
+  }
+
+  const x=chosen.x;
+  const pVraw=x.map((v,j)=>v*wTrap[j]);
+  const sumV=pVraw.reduce((a,b)=>a+b,0);
+  if(!(sumV>0))throw Error('CSD inversion produced zero distribution; check peak isolation or bounds');
+
+  const pV=pVraw.map(v=>v/sumV);
+  const fV=pV.map((v,j)=>v/dD[j]);       // probability density per nm (integral fV dD = 1)
+  const gV=x.map(v=>v/sumV);             // density in ln(D) space
+
+  const pNraw=pV.map((v,j)=>v/(D[j]*D[j]*D[j]));
+  const sumN=pNraw.reduce((a,b)=>a+b,0)||1;
+  const pN=pNraw.map(v=>v/sumN);
+  const fN=pN.map((v,j)=>v/dD[j]);
+
+  const cdfV=[], cdfN=[];
+  let accV=0, accN=0;
+  for(let j=0;j<M;j++){
+    accV+=pV[j];accN+=pN[j];
+    cdfV.push(Math.min(1,accV));
+    cdfN.push(Math.min(1,accN));
+  }
+
+  const D_V=pV.reduce((s,v,j)=>s+v*D[j],0);
+  const D_A=1/pV.reduce((s,v,j)=>s+v/D[j],0); // exact <D^3>/<D^2>
+  const D_N=pN.reduce((s,v,j)=>s+v*D[j],0);
+  const varN=pN.reduce((s,v,j)=>s+v*(D[j]-D_N)**2,0);
+  const sigma_N=Math.sqrt(Math.max(0,varN));
+
+  const yMean=iArr.reduce((a,b)=>a+b,0)/n;
+  const sst=iArr.reduce((s,v)=>s+(v-yMean)**2,0);
+  const r2=sst>1e-20?1-chosen.sse/sst:1;
+  const modes=detectCSDModes(D,gV,pV);
+
+  return{
+    D,fV,fN,gV,cdfV,cdfN,pV,pN,
+    D_N,sigma_N,D_A,D_V,
+    D10_V:quantileFromCDF(D,cdfV,0.10),D50_V:quantileFromCDF(D,cdfV,0.50),D90_V:quantileFromCDF(D,cdfV,0.90),
+    D10_N:quantileFromCDF(D,cdfN,0.10),D50_N:quantileFromCDF(D,cdfN,0.50),D90_N:quantileFromCDF(D,cdfN,0.90),
+    modes,bimodal:modes.length>=2,
+    regLambda:chosen.lam,r2,yFit:chosen.yFit
+  };
+}
+
+function deKeijserVoigt(fwhm,beta){
+  // de Keijser, Langford, Mittemeijer & Vogels (1982), J. Appl. Cryst. 15, 308-314
+  const phiRaw=fwhm/(beta||1e-12);
+  if(phiRaw>=PHI_G-1e-6)return{phi:phiRaw,betaC:0,betaG:beta};
+  if(phiRaw<=PHI_C+1e-6)return{phi:phiRaw,betaC:beta,betaG:0};
+  const phi=phiRaw;
+  let rC=2.0207 - 0.4803*phi - 1.7756*phi*phi;
+  let rG=0.6420 + 1.4187*Math.sqrt(Math.max(0,phi-PHI_C)) - 2.2043*phi + 1.8706*phi*phi;
+  rC=Math.max(0,Math.min(1,rC));
+  rG=Math.max(0,Math.min(1,rG));
+  return{phi:phiRaw,betaC:beta*rC,betaG:beta*rG};
+}
+
+function krillBirringerCSD(peakDeg,fwhmDeg,betaDeg,lambdaA,instDeg=0,instModel='gaussian',widthMode='integral'){
+  // Krill & Birringer (1998) / Langford, Louër & Scardi (2000) lognormal analytic cross-check
+  const lamNm=lambdaA/10;
+  const toS=deg=>(Math.cos(peakDeg*Math.PI/360)/lamNm)*(deg*Math.PI/180);
+  const fwhmS=toS(fwhmDeg), betaS=toS(betaDeg);
+  const vk=deKeijserVoigt(fwhmS,betaS);
+  let betaC=vk.betaC, betaG=vk.betaG;
+
+  if(instDeg>0){
+    const instS=toS(instDeg);
+    if(instModel==='cauchy'){
+      const instBetaC=widthMode==='integral'?instS:(instS*HALF_PI);
+      betaC=Math.max(0,betaC-instBetaC);
+    }else{
+      const instBetaG=widthMode==='integral'?instS:(instS*SQRT_PI_4LN2);
+      betaG=Math.sqrt(Math.max(0,betaG*betaG-instBetaG*instBetaG));
+    }
+  }
+
+  if(!(betaC>1e-12||betaG>1e-12)){
+    return{suppressed:true,reason:'Sample breadth after instrument subtraction is zero',phi:vk.phi,betaC,betaG,L_A:null,L_V:null,ratioLV_LA:null,D0:null,sigma:null,D_N:null,sigma_N:null,D_A:null,D_V:null};
+  }
+
+  let L_V;
+  if(betaG<=1e-12)L_V=1/betaC;
+  else if(betaC<=1e-12)L_V=1/betaG;
+  else{
+    const k=betaC/(Math.sqrt(Math.PI)*betaG);
+    L_V=erfcx(k)/betaG;
+  }
+  const L_A=betaC>1e-12?(1/(2*betaC)):Infinity;
+  const ratio=Number.isFinite(L_A)?(L_V/L_A):0;
+  const D_V_mono=(4/3)*L_V;
+
+  // For lognormally distributed spheres: <L>_V / <L>_A = (9/8) * exp(sigma^2).
+  // Near pure Gaussian (ratio <= 9/8), sigma^2 <= 0 -> honestly suppress variance!
+  if(!(ratio>9/8 + 1e-9)){
+    return{
+      suppressed:true,
+      reason:`Near-Gaussian profile (⟨L⟩V/⟨L⟩A = ${fmt(ratio,4)} ≤ 9/8 = 1.125): lognormal variance is nonphysical and suppressed`,
+      phi:vk.phi,betaC,betaG,
+      L_A:Number.isFinite(L_A)?L_A:null,
+      L_V,ratioLV_LA:ratio,
+      D0:null,sigma:null,D_N:null,sigma_N:null,D_A:null,D_V:D_V_mono
+    };
+  }
+
+  const sigma2=Math.log((8/9)*ratio);
+  const sigma=Math.sqrt(sigma2);
+  const D0=(4/3)*L_V*Math.exp(-3.5*sigma2);
+  const D_N=D0*Math.exp(0.5*sigma2);
+  const sigma_N=D_N*Math.sqrt(Math.exp(sigma2)-1);
+  const D_A=D0*Math.exp(2.5*sigma2);
+  const D_V=D0*Math.exp(3.5*sigma2);
+  return{
+    suppressed:false,
+    reason:'Valid lognormal Voigt decomposition (⟨L⟩V/⟨L⟩A > 9/8)',
+    phi:vk.phi,betaC,betaG,L_A,L_V,ratioLV_LA:ratio,
+    D0,sigma,D_N,sigma_N,D_A,D_V,
+    D10_N:D0*Math.exp(-1.28155*sigma),D50_N:D0,D90_N:D0*Math.exp(1.28155*sigma)
+  };
+}
+
+function measureProfileWidths(xs,ys){
+  // Measure peak center, FWHM and integral breadth on an arbitrary isolated/composite profile
+  let pi=0;for(let i=1;i<ys.length;i++)if(ys[i]>ys[pi])pi=i;
+  const max=ys[pi], half=max/2;
+  let lo=null, hi=null;
+  for(let i=pi;i>0;i--)if(ys[i-1]<=half&&ys[i]>=half){lo=crossing(xs[i-1],ys[i-1],xs[i],ys[i],half);break;}
+  for(let i=pi;i<ys.length-1;i++)if(ys[i]>=half&&ys[i+1]<=half){hi=crossing(xs[i],ys[i],xs[i+1],ys[i+1],half);break;}
+  const area=trapXY(xs,ys);
+  const fwhm=(lo!==null&&hi!==null&&hi>lo)?(hi-lo):area/(max*SQRT_PI_4LN2);
+  return{peak:xs[pi],max,fwhm,area,integralBreadth:area/(max||1)};
+}
+
+function runCSDFromDeconv(deconv,targetIdx,opts={}){
+  // targetIdx: 'composite' or integer sub-peak index
+  const sc=readScherrerParams();
+  const lamNm=sc.lambda/10;
+  const xs=deconv.xs;
+  let isoY, centerDeg, targetLabel, kbFwhm, kbBeta;
+  if(targetIdx==='composite'){
+    isoY=deconv.ys.map((y,i)=>y-deconv.baseArr[i]);
+    const sumA=deconv.peaks.reduce((s,p)=>s+p.area,0)||1;
+    centerDeg=deconv.peaks.reduce((s,p)=>s+p.area*p.peak,0)/sumA;
+    targetLabel='Composite ('+deconv.peaks.map(p=>p.label).join(' + ')+')';
+    // Measure FWHM and integral breadth from the smooth fitted composite envelope for de Keijser
+    const compFit=xs.map((_,i)=>deconv.peaks.reduce((s,p)=>s+p.curve[i],0));
+    const mw=measureProfileWidths(xs,compFit);
+    kbFwhm=mw.fwhm;kbBeta=mw.integralBreadth;
+  }else{
+    const idx=Number(targetIdx);
+    const pk=deconv.peaks[idx];
+    if(!pk)throw Error('Invalid CSD target peak');
+    isoY=deconv.ys.map((y,i)=>{
+      let other=0;
+      for(let j=0;j<deconv.peaks.length;j++)if(j!==idx)other+=deconv.peaks[j].curve[i];
+      return y - deconv.baseArr[i] - other;
+    });
+    centerDeg=pk.peak;
+    targetLabel=pk.label;
+    kbFwhm=pk.fwhm;
+    kbBeta=pk.integralBreadth;
+  }
+  const s0=2*Math.sin(centerDeg*Math.PI/360)/lamNm;
+  const sArr=xs.map(tt=>2*Math.sin(tt*Math.PI/360)/lamNm - s0);
+  const instBetaS=sc.inst>0?(Math.cos(centerDeg*Math.PI/360)/lamNm)*(sc.inst*Math.PI/180):0;
+
+  const nnls=invertCSD_NNLS(sArr,isoY,{
+    Dmin:opts.Dmin??(+$('csdDmin')?.value||1),
+    Dmax:opts.Dmax??(+$('csdDmax')?.value||80),
+    regMode:opts.regMode??($('csdReg')?.value||'auto'),
+    instBetaS,
+    instModel:sc.broadeningModel,
+    widthMode:sc.widthMode,
+    noiseSigma:deconv.rmse
+  });
+  const kb=krillBirringerCSD(centerDeg,kbFwhm,kbBeta,sc.lambda,sc.inst,sc.broadeningModel,sc.widthMode);
+  return{target:targetLabel,targetKey:String(targetIdx),centerDeg,s0,sArr,isoY,nnls,krill_birringer:kb};
+}
+
+// ==================== PLOTTING: DECONVOLUTION + RESIDUALS & CSD ====================
+function drawDeconvCanvas(canvasId,legendId,d){
+  const c=$(canvasId);if(!c)return;
+  c.classList.remove('hidden');
+  const ctx=c.getContext('2d'),W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  const padL=56,padR=18,padT=20,splitY=Math.round(H*0.72),resT=splitY+24,padB=28;
+  const pw=W-padL-padR, phMain=splitY-padT, phRes=H-padB-resT;
+  const xMin=d.xs[0], xMax=d.xs.at(-1);
+  let yMin=Infinity,yMax=-Infinity,rMax=1e-6;
+  for(let i=0;i<d.xs.length;i++){
+    const v1=d.ys[i],v2=d.yFit[i],v3=d.baseArr[i];
+    yMin=Math.min(yMin,v1,v2,v3);yMax=Math.max(yMax,v1,v2,v3);
+    rMax=Math.max(rMax,Math.abs(d.residuals[i]));
+  }
+  const X=v=>padL+(v-xMin)/(xMax-xMin||1)*pw;
+  const Y=v=>splitY-(v-yMin)/(yMax-yMin||1)*phMain;
+  const YR=v=>resT+phRes/2-(v/rMax)*(phRes*0.44);
+
+  // Grid
+  ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;
+  for(let j=0;j<=4;j++){const yy=padT+j*phMain/4;ctx.beginPath();ctx.moveTo(padL,yy);ctx.lineTo(W-padR,yy);ctx.stroke();}
+  ctx.strokeStyle='#cbd5e1';ctx.strokeRect(padL,padT,pw,phMain);ctx.strokeRect(padL,resT,pw,phRes);
+
+  // Sub-peaks shaded above fitted baseline
+  d.peaks.forEach((pk,idx)=>{
+    const col=SUB_COLORS[idx%SUB_COLORS.length];
+    ctx.fillStyle=col+'24';
+    ctx.beginPath();
+    d.xs.forEach((x,i)=>{const yy=Y(d.baseArr[i]+pk.curve[i]);if(i)ctx.lineTo(X(x),yy);else ctx.moveTo(X(x),yy);});
+    for(let i=d.xs.length-1;i>=0;i--)ctx.lineTo(X(d.xs[i]),Y(d.baseArr[i]));
+    ctx.closePath();ctx.fill();
+    ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.beginPath();
+    d.xs.forEach((x,i)=>{const yy=Y(d.baseArr[i]+pk.curve[i]);if(i)ctx.lineTo(X(x),yy);else ctx.moveTo(X(x),yy);});
+    ctx.stroke();
+  });
+
+  // Fitted baseline (dashed)
+  ctx.save();ctx.setLineDash([5,4]);ctx.strokeStyle='#64748b';ctx.lineWidth=1.3;ctx.beginPath();
+  d.xs.forEach((x,i)=>{if(i)ctx.lineTo(X(x),Y(d.baseArr[i]));else ctx.moveTo(X(x),Y(d.baseArr[i]));});
+  ctx.stroke();ctx.restore();
+
+  // Raw data points
+  ctx.fillStyle='#1e293b88';
+  const stepDraw=Math.max(1,Math.floor(d.xs.length/320));
+  for(let i=0;i<d.xs.length;i+=stepDraw){
+    ctx.beginPath();ctx.arc(X(d.xs[i]),Y(d.ys[i]),2,0,2*Math.PI);ctx.fill();
+  }
+
+  // Total fitted envelope
+  ctx.strokeStyle='#1d4ed8';ctx.lineWidth=2.1;ctx.beginPath();
+  d.xs.forEach((x,i)=>{if(i)ctx.lineTo(X(x),Y(d.yFit[i]));else ctx.moveTo(X(x),Y(d.yFit[i]));});
+  ctx.stroke();
+
+  // Residual panel
+  ctx.strokeStyle='#94a3b8';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(padL,YR(0));ctx.lineTo(W-padR,YR(0));ctx.stroke();
+  ctx.strokeStyle='#0f766e';ctx.lineWidth=1.2;ctx.beginPath();
+  d.xs.forEach((x,i)=>{if(i)ctx.lineTo(X(x),YR(d.residuals[i]));else ctx.moveTo(X(x),YR(d.residuals[i]));});
+  ctx.stroke();
+
+  // Labels
+  ctx.fillStyle='#475569';ctx.font='12px Segoe UI,sans-serif';
+  ctx.fillText('Intensity',4,15);
+  ctx.fillText('Residual',4,resT+12);
+  ctx.fillText('±'+rMax.toFixed(1),4,resT+phRes-2);
+  for(let t=0;t<=5;t++){
+    const ang=xMin+(xMax-xMin)*t/5;
+    ctx.fillText(ang.toFixed(2)+'°',padL+pw*t/5-(t===5?34:14),H-8);
+  }
+
+  if(legendId&&$(legendId)){
+    $(legendId).innerHTML=
+      '<span><i class="dot" style="background:#1e293b"></i>Raw data</span>'+
+      '<span><i class="dot" style="background:#1d4ed8"></i>Total fit</span>'+
+      '<span><i class="dot" style="background:#64748b"></i>Fitted baseline</span>'+
+      d.peaks.map((pk,i)=>`<span><i class="dot" style="background:${SUB_COLORS[i%SUB_COLORS.length]}"></i>${escapeHTML(pk.label)} (${fmt(pk.peak,2)}°)</span>`).join('')+
+      '<span><i class="dot" style="background:#0f766e"></i>Residual</span>';
+  }
+}
+
+function drawCSDCanvas(csd){
+  const c=$('csdChart');if(!c||!csd||!csd.nnls)return;
+  c.classList.remove('hidden');
+  const ctx=c.getContext('2d'),W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  const n=csd.nnls, isCDF=($('csdPlotType')?.value==='cdf');
+  const padL=56,padR=20,padT=24,padB=34,pw=W-padL-padR,ph=H-padT-padB;
+  const dMin=n.D[0], dMax=n.D.at(-1);
+  const yV=isCDF?n.cdfV:n.fV, yN=isCDF?n.cdfN:n.fN;
+  const yMax=isCDF?1.05:Math.max(1e-6,...yV,...yN)*1.12;
+  const X=v=>padL+(v-dMin)/(dMax-dMin||1)*pw;
+  const Y=v=>(H-padB)-(v/yMax)*ph;
+
+  ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;
+  for(let j=0;j<=4;j++){const yy=padT+j*ph/4;ctx.beginPath();ctx.moveTo(padL,yy);ctx.lineTo(W-padR,yy);ctx.stroke();}
+  ctx.strokeStyle='#cbd5e1';ctx.strokeRect(padL,padT,pw,ph);
+
+  // Fill Volume-weighted curve
+  if(!isCDF){
+    ctx.fillStyle='#0d948822';ctx.beginPath();
+    ctx.moveTo(X(n.D[0]),Y(0));
+    n.D.forEach((d,i)=>ctx.lineTo(X(d),Y(yV[i])));
+    ctx.lineTo(X(n.D.at(-1)),Y(0));ctx.closePath();ctx.fill();
+  }
+  // Draw f_V / F_V
+  ctx.strokeStyle='#0d9488';ctx.lineWidth=2.2;ctx.beginPath();
+  n.D.forEach((d,i)=>{if(i)ctx.lineTo(X(d),Y(yV[i]));else ctx.moveTo(X(d),Y(yV[i]));});
+  ctx.stroke();
+
+  // Draw f_N / F_N
+  ctx.strokeStyle='#7c3aed';ctx.lineWidth=2.0;ctx.beginPath();
+  n.D.forEach((d,i)=>{if(i)ctx.lineTo(X(d),Y(yN[i]));else ctx.moveTo(X(d),Y(yN[i]));});
+  ctx.stroke();
+
+  // Vertical markers for <D>_N, <D>_A, <D>_V
+  const drawMark=(val,col,lbl,dy)=>{
+    if(val<dMin||val>dMax)return;
+    ctx.save();ctx.setLineDash([4,3]);ctx.strokeStyle=col;ctx.lineWidth=1.3;
+    ctx.beginPath();ctx.moveTo(X(val),padT);ctx.lineTo(X(val),H-padB);ctx.stroke();ctx.restore();
+    ctx.fillStyle=col;ctx.font='11px Segoe UI,sans-serif';
+    ctx.fillText(lbl,Math.min(W-padR-48,X(val)+4),padT+12+dy);
+  };
+  drawMark(n.D_N,'#7c3aed','⟨D⟩N='+fmt(n.D_N,1),0);
+  drawMark(n.D_A,'#d97706','⟨D⟩A='+fmt(n.D_A,1),14);
+  drawMark(n.D_V,'#0d9488','⟨D⟩V='+fmt(n.D_V,1),28);
+
+  ctx.fillStyle='#475569';ctx.font='12px Segoe UI,sans-serif';
+  ctx.fillText(isCDF?'Cumulative F(D)':'Density f(D) (nm⁻¹)',6,16);
+  ctx.fillText('Crystallite diameter D (nm)',W/2-75,H-7);
+  for(let t=0;t<=6;t++){
+    const dv=dMin+(dMax-dMin)*t/6;
+    ctx.fillText(dv.toFixed(0),padL+pw*t/6-8,H-18);
+  }
+  $('csdLegend').innerHTML=
+    `<span><i class="dot" style="background:#0d9488"></i>${isCDF?'Volume CDF F_V(D)':'Volume-weighted PDF f_V(D)'}</span>`+
+    `<span><i class="dot" style="background:#7c3aed"></i>${isCDF?'Number CDF F_N(D)':'Number-weighted PDF f_N(D)'}</span>`+
+    `<span><i class="dot" style="background:#d97706"></i>⟨D⟩A = ⟨D³⟩/⟨D²⟩</span>`;
+}
+
+// ==================== RESULT HTML RENDERERS ====================
+function ptcoResultHTML(r,Demp,C){
+  const cls=r.snr>=15?'good':r.snr>=10?'warnc':'bad';
+  return `<div class="result"><b>PtCo empirical calculation (single-peak SNIP comparison)</b><table><tr><th>Metric</th><th>Result</th><th>Note</th></tr><tr><td>Peak 2θ / θ</td><td class="val">${fmt(r.peak,4)}° / ${fmt(r.peak/2,4)}°</td><td>PtCo L1₀ (220)</td></tr><tr><td>Net peak area (Gaussian approx)</td><td class="val">${fmt(r.area,2)}</td><td>SNIP baseline + Gaussian width approximation</td></tr><tr><td>FWHM / integral breadth</td><td class="val">${fmt(r.fwhm,4)}° / ${fmt(r.integralBreadth,4)}°</td><td>Kα₂ is not stripped; use corrected input</td></tr><tr><td>SNR</td><td class="val">${fmt(r.snr,1)}</td><td class="${cls}">${r.snr>=15?'reliable':r.snr>=10?'acceptable':'weak'}</td></tr><tr><td>Scherrer D (β from ${$('mode').value==='integral'?'integral breadth':'FWHM'})</td><td class="val">${fmt(r.D,2)} nm</td><td>${r.correction}</td></tr><tr><td>Empirical size D × C</td><td class="val">${fmt(Demp,2)} nm</td><td>C = ${fmt(C,2)} (pending TEM calibration)</td></tr></table><div class="small" style="margin-top:7px">Local SNIP baseline ${fmt(r.base,1)} counts · residual σ ${fmt(r.max/r.snr,1)} · Single-peak SNIP cannot separate overlapping (220)+(202); uncheck legacy SNIP to use 2-peak deconvolution.</div></div>`;
+}
+
+function ptcoDeconvHTML(d,C){
+  const p220=d.peaks[0], p202=d.peaks[1]||d.peaks[0];
+  const Demp=p220.D*C;
+  const latStr=d.lattice?`a = ${fmt(d.lattice.a,4)} Å · c = ${fmt(d.lattice.c,4)} Å · c/a = ${fmt(d.lattice.cOverA,4)}`:'Not inferred';
+  return `<div class="result">
+    <b>PtCo L1₀ (220)+(202) Nonlinear Deconvolution → Crystallite Size</b>
+    <div class="grid2">
+      <div class="kpi"><div class="k">(220) Scherrer D / Empirical D×C</div><div class="v">${fmt(p220.D,2)} nm / ${fmt(Demp,2)} nm</div></div>
+      <div class="kpi"><div class="k">Total fitted ΣAₖ vs Endpoint baseline</div><div class="v">${fmt(d.totalFittedArea,1)} vs ${fmt(d.endpointBaselineArea,1)} (${fmt(d.endpointDeltaPct,1)}%)</div></div>
+      <div class="kpi"><div class="k">Fit quality (R² / Rwp / RMSE)</div><div class="v">${fmt(d.r2,4)} / ${fmt(d.rwp,2)}% / ${fmt(d.rmse,2)}</div></div>
+      <div class="kpi"><div class="k">Tetragonal lattice (${d.lattice?d.lattice.pair:'—'})</div><div class="v" style="font-size:13.5px">${latStr}</div></div>
+    </div>
+    <table>
+      <tr><th>Sub-peak</th><th>2θ (°)</th><th>Height</th><th>FWHM (°)</th><th>β (°)</th><th>η</th><th>Net Area Aₖ</th><th>Area %</th><th>Scherrer D (nm)</th></tr>
+      ${d.peaks.map(p=>`<tr><td><b>${escapeHTML(p.label)}</b></td><td class="val">${fmt(p.peak,3)}</td><td>${fmt(p.height,1)}</td><td>${fmt(p.fwhm,4)}</td><td>${fmt(p.integralBreadth,4)}</td><td>${fmt(p.eta,3)}</td><td class="val">${fmt(p.area,2)}</td><td>${fmt(p.areaFraction*100,1)}%</td><td class="val">${fmt(p.D,2)}</td></tr>`).join('')}
+    </table>
+    <div class="small" style="margin-top:8px"><b>Area comparison:</b> Total analytic fitted ΣAₖ = <b>${fmt(d.totalFittedArea,2)}</b> · Fitted-baseline numerical trapz = <b>${fmt(d.fittedBaselineNumericalArea,2)}</b> · Traditional endpoint-baseline trapz = <b>${fmt(d.endpointBaselineArea,2)}</b> (${fmt(d.endpointDeltaPct,1)}% vs ΣAₖ). C = ${fmt(C,2)} · ${p220.correction}.</div>
+  </div>`;
+}
+
+function resultHTML(r){
+  const cls=r.snr>=15?'good':r.snr>=10?'warnc':'bad';
+  return `<div class="result"><b>Calculation result</b><table><tr><th>Metric</th><th>Result</th><th>Assessment</th></tr><tr><td>Peak 2θ / θ</td><td class="val">${fmt(r.peak,4)}° / ${fmt(r.peak/2,4)}°</td><td>θ=2θ/2</td></tr><tr><td>Net peak area</td><td class="val">${fmt(r.area,2)}</td><td>${$('calcMode').value==='standard'?'Endpoint baseline + trapezoidal integration':'SNIP baseline + Gaussian width approximation'}</td></tr><tr><td>FWHM / integral breadth</td><td class="val">${fmt(r.fwhm,4)}° / ${fmt(r.integralBreadth,4)}°</td><td>Kα₂ is not stripped; use corrected input</td></tr><tr><td>βsample</td><td class="val">${fmt(r.correctedDeg,4)}° = ${fmt(r.correctedDeg*Math.PI/180,6)} rad</td><td>${r.correction}</td></tr><tr><td>SNR</td><td class="val">${fmt(r.snr,1)}</td><td class="${cls}">${r.snr>=15?'reliable':r.snr>=10?'acceptable':'weak; consider (111)'}</td></tr><tr><td>Scherrer D</td><td class="val">${fmt(r.D,2)} nm</td><td>Coherently diffracting domain size; not equal to particle size</td></tr></table><div class="small" style="margin-top:7px">Baseline avg ${fmt(r.base,1)} counts · residual σ ${fmt(r.max/r.snr,1)} · Input doublet correction must be performed before analysis</div></div>`;
+}
+
+function deconvResultHTML(d){
+  const latHtml=d.lattice
+    ?`<div class="kpi"><div class="k">Tetragonal Lattice (${d.lattice.pair})</div><div class="v" style="font-size:13.5px">a = ${fmt(d.lattice.a,4)} Å · c = ${fmt(d.lattice.c,4)} Å · c/a = ${fmt(d.lattice.cOverA,4)}</div></div>`:'';
+  return `<div class="result">
+    <b>Multi-peak Nonlinear Deconvolution (${escapeHTML(d.shape)}, ${escapeHTML(d.baseMode)} baseline)</b>
+    <div class="grid2">
+      <div class="kpi"><div class="k">Total fitted ΣAₖ (analytic)</div><div class="v">${fmt(d.totalFittedArea,2)}</div></div>
+      <div class="kpi"><div class="k">Fitted-baseline numerical area</div><div class="v">${fmt(d.fittedBaselineNumericalArea,2)}</div></div>
+      <div class="kpi"><div class="k">Endpoint-baseline area (vs ΣAₖ)</div><div class="v">${fmt(d.endpointBaselineArea,2)} <span style="font-size:12px;color:${d.endpointDeltaPct<-5?'#dc2626':'#475569'}">(${fmt(d.endpointDeltaPct,1)}%)</span></div></div>
+      <div class="kpi"><div class="k">Goodness of fit (R² / Rwp / RMSE)</div><div class="v" style="font-size:14px">${fmt(d.r2,5)} / ${fmt(d.rwp,2)}% / ${fmt(d.rmse,2)}</div></div>
+      ${latHtml}
+    </div>
+    <table>
+      <tr><th>Sub-peak</th><th>2θ (°)</th><th>Height</th><th>FWHM (°)</th><th>β (°)</th><th>η</th><th>Net Area Aₖ</th><th>Vol/Area %</th><th>Scherrer Dₖ (nm)</th></tr>
+      ${d.peaks.map((p,i)=>`<tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${SUB_COLORS[i%SUB_COLORS.length]};margin-right:5px"></span><b>${escapeHTML(p.label)}</b></td><td class="val">${fmt(p.peak,3)}</td><td>${fmt(p.height,1)}</td><td>${fmt(p.fwhm,4)}</td><td>${fmt(p.integralBreadth,4)}</td><td>${fmt(p.eta,3)}</td><td class="val">${fmt(p.area,2)}</td><td>${fmt(p.areaFraction*100,1)}%</td><td class="val">${fmt(p.D,2)}</td></tr>`).join('')}
+    </table>
+    <div class="small" style="margin-top:7px">Window: ${fmt(d.window[0],2)}°–${fmt(d.window[1],2)}° · Width mode: ${$('mode').value} · ${d.peaks[0]?.correction||''} · Analytic ΣAₖ integrates full Pseudo-Voigt tails, preventing endpoint-chord truncation on broad overlapping reflections.</div>
+  </div>`;
+}
+
+function csdResultHTML(csd){
+  const n=csd.nnls, kb=csd.krill_birringer;
+  const modeBadge=n.bimodal
+    ?`<span class="pill" style="background:#fef3c7;color:#92400e">Bimodal / Multi-modal (${n.modes.map(m=>`${fmt(m.D_peak,1)} nm (${fmt(m.volumeFraction*100,0)}%)`).join(' + ')})</span>`
+    :`<span class="pill">Unimodal (peak ${fmt(n.modes[0]?.D_peak,1)} nm)</span>`;
+  return `<div class="result" style="background:#ffffff;border-color:#99f6e4">
+    <b>CSD Inversion Result — Target: ${escapeHTML(csd.target)} (2θ₀ = ${fmt(csd.centerDeg,3)}°)</b> ${modeBadge}
+    <div class="grid2">
+      <div class="kpi"><div class="k">Number-weighted ⟨D⟩N ± σN (NNLS)</div><div class="v">${fmt(n.D_N,2)} ± ${fmt(n.sigma_N,2)} nm</div></div>
+      <div class="kpi"><div class="k">Area-weighted ⟨D⟩A = ⟨D³⟩/⟨D²⟩</div><div class="v">${fmt(n.D_A,2)} nm</div></div>
+      <div class="kpi"><div class="k">Volume-weighted ⟨D⟩V</div><div class="v">${fmt(n.D_V,2)} nm</div></div>
+      <div class="kpi"><div class="k">Volume D10 / D50 / D90 (nm)</div><div class="v" style="font-size:14px">${fmt(n.D10_V,2)} / ${fmt(n.D50_V,2)} / ${fmt(n.D90_V,2)}</div></div>
+    </div>
+    <table>
+      <tr><th>Method</th><th>⟨D⟩N ± σN (nm)</th><th>⟨D⟩A (nm)</th><th>⟨D⟩V (nm)</th><th>D10 / D50 / D90 (Number, nm)</th><th>Diagnostics</th></tr>
+      <tr>
+        <td><b>Tikhonov-NNLS (Spherical I_S)</b></td>
+        <td class="val">${fmt(n.D_N,2)} ± ${fmt(n.sigma_N,2)}</td>
+        <td class="val">${fmt(n.D_A,2)}</td>
+        <td class="val">${fmt(n.D_V,2)}</td>
+        <td>${fmt(n.D10_N,2)} / ${fmt(n.D50_N,2)} / ${fmt(n.D90_N,2)}</td>
+        <td>R² = ${fmt(n.r2,4)} · λ = ${n.regLambda.toExponential(1)}</td>
+      </tr>
+      <tr>
+        <td><b>Krill–Birringer (de Keijser Voigt)</b></td>
+        <td class="val">${kb.suppressed?'Suppressed':`${fmt(kb.D_N,2)} ± ${fmt(kb.sigma_N,2)}`}</td>
+        <td class="val">${kb.suppressed?'—':fmt(kb.D_A,2)}</td>
+        <td class="val">${fmt(kb.D_V,2)}</td>
+        <td>${kb.suppressed?'—':`${fmt(kb.D10_N,2)} / ${fmt(kb.D50_N,2)} / ${fmt(kb.D90_N,2)}`}</td>
+        <td class="${kb.suppressed?'warnc':'good'}">${kb.suppressed?escapeHTML(kb.reason):`D₀=${fmt(kb.D0,2)} nm, σ=${fmt(kb.sigma,3)}, ⟨L⟩V/⟨L⟩A=${fmt(kb.ratioLV_LA,3)}`}</td>
+      </tr>
+    </table>
+    <div class="small" style="margin-top:7px">Assumes spherical crystallites with negligible microstrain in the isolated peak; microstrain or stacking faults can broaden tails and mimic smaller crystallites.</div>
+  </div>`;
+}
+
+// ==================== TAB 2: DECONVOLUTION UI & SEED TABLE ====================
+function addDeconvSeedRow(label='Peak',mu=68.45,fwhm=1.1,shift=1.5){
+  const tbody=$('deconvSeeds');
+  if(tbody.rows.length>=6){msg('Maximum 6 overlapping sub-peaks supported','warn');return;}
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td><input value="${escapeHTML(label)}" style="min-width:105px"></td><td><input type="number" step=".02" value="${mu}"></td><td><input type="number" step=".05" value="${fwhm}"></td><td><input type="number" step=".1" value="${shift}"></td><td><button class="remove" type="button">Remove</button></td>`;
+  tr.querySelector('.remove').onclick=()=>{invalidate();tr.remove();};
+  tbody.appendChild(tr);
+}
+
+function loadDeconvPreset(kind){
+  invalidate();
+  $('deconvSeeds').innerHTML='';
+  if(kind==='220'){
+    $('deconvLeft').value=64;$('deconvRight').value=75;
+    $('deconvShape').value='pvoigt';$('deconvBaseline').value='linear';
+    addDeconvSeedRow('(220)',68.45,1.2,1.5);
+    addDeconvSeedRow('(202)',70.46,1.2,1.5);
+    msg('Loaded PtCo L1₀ (220)+(202) preset (64°–75°)','ok');
+  }else if(kind==='200'){
+    $('deconvLeft').value=44;$('deconvRight').value=52;
+    $('deconvShape').value='pvoigt';$('deconvBaseline').value='linear';
+    addDeconvSeedRow('(200)',47.14,1.1,1.3);
+    addDeconvSeedRow('(002)',49.03,1.1,1.3);
+    msg('Loaded PtCo L1₀ (200)+(002) preset (44°–52°)','ok');
+  }else if(kind==='bimodal'){
+    $('deconvLeft').value=34;$('deconvRight').value=46;
+    $('deconvShape').value='pvoigt';$('deconvBaseline').value='linear';
+    // Find local max near 40.3 deg if data is loaded
+    let cPos=40.304;
+    if(state.x.length){
+      const ia=idxRange(36,44);
+      if(ia.length){
+        let bi=ia[0];for(const i of ia)if(state.y[i]>state.y[bi])bi=i;
+        cPos=Number(state.x[bi].toFixed(3));
+      }
+    }
+    addDeconvSeedRow('(111) large',cPos,0.55,0.4);
+    addDeconvSeedRow('(111) small',cPos,2.20,0.6);
+    msg(`Loaded Bimodal (111) small+large co-centered preset (${cPos}°)`,'ok');
+  }
+  syncRegions();draw();
+}
+
+function populateCSDTargets(deconv){
+  const sel=$('csdTarget');
+  sel.innerHTML='';
+  deconv.peaks.forEach((p,i)=>{
+    const opt=document.createElement('option');
+    opt.value=String(i);
+    opt.textContent=`Sub-peak ${i+1}: ${p.label} (${fmt(p.peak,2)}°) — neighbor-stripped`;
+    sel.appendChild(opt);
+  });
+  const optC=document.createElement('option');
+  optC.value='composite';
+  optC.textContent='Composite (all fitted sub-peaks combined)';
+  sel.appendChild(optC);
+  sel.value=deconv.isCoCentered?'composite':'0';
+}
+
+function executeDeconv(){
+  try{
+    invalidate();
+    const l=+$('deconvLeft').value, r=+$('deconvRight').value;
+    if(!Number.isFinite(l)||!Number.isFinite(r)||r<=l)throw Error('Deconvolution window bounds must be finite with right > left');
+    const ia=idxRange(l,r);if(ia.length<8)throw Error('Too few data points in deconvolution window (need at least 8)');
+    const xs=ia.map(i=>state.x[i]), ys=ia.map(i=>state.y[i]);
+    const rows=[...$('deconvSeeds').rows];
+    if(!rows.length)throw Error('Add at least one sub-peak seed or click a preset');
+    const seeds=rows.map(tr=>{
+      const inp=tr.querySelectorAll('input');
+      const mu=+inp[1].value, fwhm=+inp[2].value, shift=+inp[3].value;
+      if(!Number.isFinite(mu)||!Number.isFinite(fwhm)||fwhm<=0)throw Error('Peak seed 2θ and FWHM must be valid positive numbers');
+      return{label:inp[0].value||'Peak',mu,fwhm,shift:Number.isFinite(shift)&&shift>0?shift:1.5};
+    });
+    const d=fitMultiPeakLM(xs,ys,seeds,{shape:$('deconvShape').value,baseline:$('deconvBaseline').value});
+    state.lastDeconv=d;
+    $('deconvResult').innerHTML=deconvResultHTML(d);
+    drawDeconvCanvas('deconvChart','deconvLegend',d);
+    $('csdPanel').classList.remove('hidden');
+    populateCSDTargets(d);
+    saveResult({
+      method:'deconvolution',
+      settings:{...analysisSettings(),profile_shape:d.shape,deconv_baseline:d.baseMode},
+      deconvolution:{
+        window:d.window,r2:d.r2,rwp:d.rwp,rmse:d.rmse,
+        total_fitted_area:d.totalFittedArea,
+        fitted_baseline_numerical_area:d.fittedBaselineNumericalArea,
+        endpoint_baseline_area:d.endpointBaselineArea,
+        endpoint_delta_pct:d.endpointDeltaPct
+      },
+      lattice:d.lattice,
+      peaks:d.peaks.map(({curve,...rest})=>rest),
+      units:{angle:'degree 2theta',size:'nm',width:'degree 2theta',lattice:'angstrom'}
+    });
+    syncRegions();draw();
+    msg(`Multi-peak LM fit converged (R² = ${fmt(d.r2,4)}, Rwp = ${fmt(d.rwp,2)}%)`,'ok');
+  }catch(e){invalidate();msg(e.message,'err');}
+}
+
+function executeCSD(){
+  try{
+    if(!state.lastDeconv)throw Error('Run multi-peak deconvolution first');
+    const target=$('csdTarget').value;
+    const csd=runCSDFromDeconv(state.lastDeconv,target);
+    $('csdResult').innerHTML=csdResultHTML(csd);
+    drawCSDCanvas(csd);
+    if(state.analysis){
+      const cleanCSD={
+        target:csd.target,center_2theta_deg:csd.centerDeg,s0_inv_nm:csd.s0,
+        nnls:{
+          D:csd.nnls.D,fV:csd.nnls.fV,fN:csd.nnls.fN,cdfV:csd.nnls.cdfV,cdfN:csd.nnls.cdfN,
+          D_N:csd.nnls.D_N,sigma_N:csd.nnls.sigma_N,D_A:csd.nnls.D_A,D_V:csd.nnls.D_V,
+          D10_V:csd.nnls.D10_V,D50_V:csd.nnls.D50_V,D90_V:csd.nnls.D90_V,
+          D10_N:csd.nnls.D10_N,D50_N:csd.nnls.D50_N,D90_N:csd.nnls.D90_N,
+          modes:csd.nnls.modes,bimodal:csd.nnls.bimodal,reg_lambda:csd.nnls.regLambda,r2:csd.nnls.r2
+        },
+        krill_birringer:csd.krill_birringer
+      };
+      saveResult({...state.analysis,csd:cleanCSD});
+    }
+    msg(`CSD inversion completed for ${csd.target} (⟨D⟩V = ${fmt(csd.nnls.D_V,2)} nm, ⟨D⟩A = ${fmt(csd.nnls.D_A,2)} nm)`,'ok');
+  }catch(e){msg(e.message,'err');}
+}
+
+// ==================== WILLIAMSON-HALL & MULTI-PEAK TAB 3 ====================
+function analysisSettings(){
+  return{
+    shape_factor_K:Number($('K').value),
+    wavelength_A:Number($('lambda').value),
+    width_mode:$('mode').value,
+    instrument_width_deg:Number($('inst').value),
+    instrument_profile:$('broadeningModel').value,
+    background_mode:$('calcMode').value,
+    kalpha2_stripped:false
+  };
+}
+
 function williamsonHall(peaks,K,lambda){
   if(!Number.isFinite(K)||K<=0||!Number.isFinite(lambda)||lambda<=0)throw Error('Invalid W-H constants');
   if(peaks.length<3)return{D_nm:null,strain:null,r2:null,reason:'At least three reflections required'};
@@ -131,11 +1991,237 @@ function williamsonHall(peaks,K,lambda){
   const xx=points.reduce((a,p)=>a+(p.x-mx)**2,0),xy=points.reduce((a,p)=>a+(p.x-mx)*(p.y-my),0);
   if(xx<1e-12||new Set(points.map(p=>p.x.toFixed(8))).size<n)return{D_nm:null,strain:null,r2:null,reason:'Use distinct diffraction reflections'};
   const slope=xy/xx,intercept=my-slope*mx,residual=points.reduce((a,p)=>a+(p.y-intercept-slope*p.x)**2,0),total=points.reduce((a,p)=>a+(p.y-my)**2,0),r2=total>1e-20?1-residual/total:null;
-  const invalid=intercept<=0||slope < -1e-10;
-  return{points,slope,intercept,r2,D_nm:invalid?null:K*(lambda/10)/intercept,strain:invalid?null:Math.max(0,slope),reason:invalid?'Nonphysical intercept or negative strain; review overlap/anisotropy':r2===null?'Constant width product; review strain resolution':r2<.95?'Low R²; review isotropic approximation':'Conditional isotropic fit'};
+  const invalid=intercept<=0||slope<-1e-10;
+  return{
+    points,slope,intercept,r2,
+    D_nm:invalid?null:K*(lambda/10)/intercept,
+    strain:invalid?null:Math.max(0,slope),
+    reason:invalid?'Nonphysical intercept or negative strain; review overlap/anisotropy':r2===null?'Constant width product; review strain resolution':r2<0.95?'Low R²; review isotropic approximation':'Conditional isotropic fit'
+  };
 }
-function drawWH(r){const c=$('wh');c.classList.remove('hidden');const ctx=c.getContext('2d'),W=c.width,H=c.height,xmin=Math.min(...r.points.map(p=>p.x)),xmax=Math.max(...r.points.map(p=>p.x)),values=r.points.map(p=>p.y).concat([r.intercept+r.slope*xmin,r.intercept+r.slope*xmax]),ymin=Math.min(...values),ymax=Math.max(...values),X=x=>55+(x-xmin)/(xmax-xmin)*(W-85),Y=y=>H-40-(y-ymin)/(ymax-ymin||1)*(H-65);ctx.clearRect(0,0,W,H);ctx.fillStyle='#607086';ctx.font='12px Segoe UI';ctx.fillText('β cosθ (radians)',10,18);ctx.fillText('4 sinθ',W/2,H-10);ctx.strokeStyle='#2563eb';ctx.beginPath();ctx.moveTo(X(xmin),Y(r.intercept+r.slope*xmin));ctx.lineTo(X(xmax),Y(r.intercept+r.slope*xmax));ctx.stroke();ctx.fillStyle='#7c3aed';for(const p of r.points){ctx.beginPath();ctx.arc(X(p.x),Y(p.y),4,0,2*Math.PI);ctx.fill();}ctx.fillText(xmin.toFixed(3),55,H-24);ctx.fillText(xmax.toFixed(3),W-65,H-24);ctx.fillText(ymin.toFixed(5),2,H-40);ctx.fillText(ymax.toFixed(5),2,35);}
-function analysisCSV(a){return rowsCSV([['sample_name','tool_version','method','peak','2theta_deg','fwhm_deg','integral_breadth_deg','corrected_width_deg','size_nm','empirical_size_nm','WH_size_nm','WH_strain','WH_R2'],...a.peaks.map(p=>[a.sample_name,a.tool_version,a.method,p.label,p.peak,p.fwhm,p.integralBreadth,p.correctedDeg,p.D,p.empirical_size_nm??null,a.williamson_hall?.D_nm??null,a.williamson_hall?.strain??null,a.williamson_hall?.r2??null])]);}
-$('drop').insertAdjacentHTML('afterend','<div class="small" style="margin-top:8px">No data file?<button id="demo" class="secondary" style="padding:4px 9px;margin-left:5px">Load demo data</button></div>');$('demo').onclick=demo;addRow('(111)',39,43.5);demo();
+
+function drawWH(r){
+  const c=$('wh');c.classList.remove('hidden');
+  const ctx=c.getContext('2d'),W=c.width,H=c.height;
+  const xmin=Math.min(...r.points.map(p=>p.x)),xmax=Math.max(...r.points.map(p=>p.x));
+  const values=r.points.map(p=>p.y).concat([r.intercept+r.slope*xmin,r.intercept+r.slope*xmax]);
+  const ymin=Math.min(...values),ymax=Math.max(...values);
+  const X=x=>58+(x-xmin)/(xmax-xmin||1)*(W-88),Y=y=>H-40-(y-ymin)/(ymax-ymin||1)*(H-65);
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle='#e2e8f0';ctx.strokeRect(58,25,W-88,H-65);
+  ctx.fillStyle='#607086';ctx.font='12px Segoe UI,sans-serif';
+  ctx.fillText('β cosθ (radians)',8,18);ctx.fillText('4 sinθ',W/2,H-10);
+  ctx.strokeStyle='#2563eb';ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(X(xmin),Y(r.intercept+r.slope*xmin));ctx.lineTo(X(xmax),Y(r.intercept+r.slope*xmax));ctx.stroke();
+  ctx.fillStyle='#7c3aed';
+  for(const p of r.points){ctx.beginPath();ctx.arc(X(p.x),Y(p.y),4.5,0,2*Math.PI);ctx.fill();}
+  ctx.fillStyle='#475569';
+  ctx.fillText(xmin.toFixed(3),55,H-24);ctx.fillText(xmax.toFixed(3),W-65,H-24);
+  ctx.fillText(ymin.toFixed(5),2,H-40);ctx.fillText(ymax.toFixed(5),2,35);
+}
+
+function addRow(label='Peak',l=39,r=43.5,rowMode='single'){
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td><input value="${escapeHTML(label)}" style="min-width:100px"></td><td><input type="number" value="${l}" step=".05"></td><td><input type="number" value="${r}" step=".05"></td><td><select class="row-mode"><option value="single">Single peak</option><option value="doublet">2-peak deconv</option></select></td><td><button class="remove" type="button">Remove</button></td>`;
+  tr.querySelector('.row-mode').value=rowMode==='doublet'?'doublet':'single';
+  tr.querySelector('.remove').onclick=()=>{invalidate();tr.remove();syncRegions();draw();};
+  $('peakRows').appendChild(tr);
+}
+
+function seedDoubletForRow(label,xs,ys){
+  const parts=label.split(/[+/]/).map(s=>s.trim()).filter(Boolean);
+  const l1=parts[0]||`${label}-1`, l2=parts[1]||`${label}-2`;
+  const xMin=xs[0], xMax=xs.at(-1);
+  if(/220/.test(label)&&/202/.test(label))return[{label:'(220)',mu:68.45,fwhm:1.2,shift:1.5},{label:'(202)',mu:70.46,fwhm:1.2,shift:1.5}];
+  if(/200/.test(label)&&/002/.test(label))return[{label:'(200)',mu:47.14,fwhm:1.1,shift:1.3},{label:'(002)',mu:49.03,fwhm:1.1,shift:1.3}];
+  const auto=autoFindPeaks(xs,ys,2);
+  if(auto.length>=2)return[{label:l1,mu:auto[0].mu,fwhm:auto[0].fwhm,shift:1.5},{label:l2,mu:auto[1].mu,fwhm:auto[1].fwhm,shift:1.5}];
+  const c=auto[0]?.mu||0.5*(xMin+xMax), d=(xMax-xMin)*0.15;
+  return[{label:l1,mu:c-d,fwhm:1.0,shift:1.5},{label:l2,mu:c+d,fwhm:1.0,shift:1.5}];
+}
+
+// ==================== EVENT WIRING ====================
+function switchTab(tab){
+  state.activeTab=tab;
+  $('singlePanel').classList.toggle('hidden',tab!=='single');
+  $('deconvPanel').classList.toggle('hidden',tab!=='deconv');
+  $('multiPanel').classList.toggle('hidden',tab!=='multi');
+  $('singleTab').classList.toggle('tab-active',tab==='single');
+  $('deconvTab').classList.toggle('tab-active',tab==='deconv');
+  $('multiTab').classList.toggle('tab-active',tab==='multi');
+  syncRegions();draw();
+}
+
+$('singleTab').onclick=()=>switchTab('single');
+$('deconvTab').onclick=()=>switchTab('deconv');
+$('multiTab').onclick=()=>switchTab('multi');
+$('langToggle').onclick=()=>applyLang(state.lang==='en'?'zh':'en');
+
+$('drop').onclick=()=>$('file').click();
+$('file').onchange=e=>{
+  invalidate();
+  const f=e.target.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{try{const r=parse(rd.result);state.x=r.x;state.y=r.y;state.name=f.name;state.fmt=(f.name.split('.').pop()||'TXT').toUpperCase();onLoaded();}catch(err){msg(err.message,'err');}};
+  rd.readAsText(f);
+};
+for(const ev of ['dragover','dragenter'])$('drop').addEventListener(ev,e=>e.preventDefault());
+$('drop').addEventListener('drop',e=>{
+  e.preventDefault();
+  const f=e.dataTransfer.files[0];
+  if(f){
+    invalidate();
+    const r=new FileReader();
+    r.onload=()=>{try{const d=parse(r.result);state.x=d.x;state.y=d.y;state.name=f.name;state.fmt='DROP';onLoaded();}catch(err){msg(err.message,'err');}};
+    r.readAsText(f);
+  }
+});
+
+$('reset').onclick=()=>{state.zoom=null;draw();};
+$('sqrt').onchange=draw;
+$('showRegions').onchange=draw;
+$('left').addEventListener('input',()=>{syncRegions();draw();});
+$('right').addEventListener('input',()=>{syncRegions();draw();});
+$('deconvLeft').addEventListener('input',()=>{syncRegions();draw();});
+$('deconvRight').addEventListener('input',()=>{syncRegions();draw();});
+
+$('auto').onclick=()=>{
+  invalidate();
+  let i=state.y.reduce((best,v,j)=>v>state.y[best]?j:best,0);
+  let p=state.x[i];
+  $('left').value=Math.max(state.x[0],p-3).toFixed(2);
+  $('right').value=Math.min(state.x.at(-1),p+3).toFixed(2);
+  syncRegions();draw();
+  msg('Peak region centered on the strongest peak','ok');
+};
+
+$('calcMode').onchange=()=>{
+  const v=$('calcMode').value, ptco=v==='ptco';
+  $('cptcoField').style.display=ptco?'flex':'none';
+  $('ptcoNote').classList.toggle('hidden',!ptco);
+  if(ptco){
+    $('left').value=64;$('right').value=75;$('mode').value='integral';
+    syncRegions();draw();
+    msg('Switched to PtCo empirical mode: (220)+(202) deconvolution in 64°–75°, width set to integral breadth','ok');
+  }else{
+    msg('Switched to '+(v==='optimized'?'optimized Scherrer (SNIP baseline + Gaussian width approximation)':'standard Scherrer (endpoint linear baseline)')+' mode','ok');
+  }
+};
+
+$('calc').onclick=()=>{
+  try{
+    invalidate();
+    const m=$('calcMode').value, l=+$('left').value, r=+$('right').value;
+    if(m==='ptco'){
+      const C=+$('cptco').value;
+      if(!Number.isFinite(C)||C<=0)throw Error('Calibration factor must be finite and positive');
+      if($('ptcoSingleSnip').checked){
+        const res=analyzeSNIP(l,r);
+        $('singleResult').innerHTML=ptcoResultHTML(res,res.D*C,C);
+        saveResult({method:'ptco_snip',settings:analysisSettings(),peaks:[{label:'(220)',...res,calibration_factor:C,empirical_size_nm:res.D*C}],units:{angle:'degree 2theta',size:'nm',width:'degree 2theta'}});
+      }else{
+        const ia=idxRange(l,r);if(ia.length<8)throw Error('Too few data points in PtCo (220)+(202) region');
+        const xs=ia.map(i=>state.x[i]), ys=ia.map(i=>state.y[i]);
+        const d=fitMultiPeakLM(xs,ys,[{label:'(220)',mu:68.45,fwhm:1.2,shift:1.5},{label:'(202)',mu:70.46,fwhm:1.2,shift:1.5}],{shape:'pvoigt',baseline:'linear'});
+        $('singleResult').innerHTML=ptcoDeconvHTML(d,C);
+        drawDeconvCanvas('singleDeconvChart',null,d);
+        saveResult({
+          method:'ptco_deconv',
+          settings:analysisSettings(),
+          deconvolution:{window:d.window,r2:d.r2,rwp:d.rwp,rmse:d.rmse,total_fitted_area:d.totalFittedArea,fitted_baseline_numerical_area:d.fittedBaselineNumericalArea,endpoint_baseline_area:d.endpointBaselineArea,endpoint_delta_pct:d.endpointDeltaPct},
+          lattice:d.lattice,
+          peaks:d.peaks.map(({curve,...pk})=>({...pk,calibration_factor:C,empirical_size_nm:pk.D*C})),
+          units:{angle:'degree 2theta',size:'nm',width:'degree 2theta',lattice:'angstrom'}
+        });
+      }
+      return;
+    }
+    const res=m==='standard'?analyze(l,r):analyzeSNIP(l,r);
+    $('singleResult').innerHTML=resultHTML(res);
+    saveResult({method:m,settings:analysisSettings(),peaks:[{label:'selected peak',...res,calibration_factor:1,empirical_size_nm:res.D}],units:{angle:'degree 2theta',size:'nm',width:'degree 2theta'}});
+  }catch(e){invalidate();msg(e.message,'err');}
+};
+
+// Tab 2 handlers
+$('preset220').onclick=()=>loadDeconvPreset('220');
+$('preset200').onclick=()=>loadDeconvPreset('200');
+$('presetBimodal').onclick=()=>loadDeconvPreset('bimodal');
+$('addDeconvPeak').onclick=()=>{invalidate();addDeconvSeedRow(`Peak ${$('deconvSeeds').rows.length+1}`,+$('deconvLeft').value+(+$('deconvRight').value-+$('deconvLeft').value)/2,1.0,1.5);};
+$('autoSeedPeaks').onclick=()=>{
+  try{
+    invalidate();
+    const l=+$('deconvLeft').value, r=+$('deconvRight').value;
+    const ia=idxRange(l,r);if(ia.length<8)throw Error('Widen deconvolution window for peak finding');
+    const found=autoFindPeaks(ia.map(i=>state.x[i]),ia.map(i=>state.y[i]),6);
+    $('deconvSeeds').innerHTML='';
+    found.forEach(s=>addDeconvSeedRow(s.label,s.mu,s.fwhm,s.shift));
+    msg(`Auto-found ${found.length} candidate peak(s) via smoothed −d²I/d2θ²`,'ok');
+  }catch(e){msg(e.message,'err');}
+};
+$('runDeconv').onclick=executeDeconv;
+$('runCSD').onclick=executeCSD;
+$('csdPlotType').onchange=()=>{if(state.analysis&&state.analysis.csd)drawCSDCanvas({nnls:state.analysis.csd.nnls});};
+
+// Tab 3 handlers
+$('add').onclick=()=>{invalidate();addRow();syncRegions();draw();};
+$('ptco').onclick=()=>{
+  invalidate();$('peakRows').innerHTML='';
+  addRow('(111)',39,43.5,'single');
+  addRow('(200)',45,48.8,'single');
+  addRow('(220)',65,72,'single');
+  syncRegions();draw();
+  msg('Loaded the three PtCo fundamental reflections','ok');
+};
+$('ptcoL10').onclick=()=>{
+  invalidate();$('peakRows').innerHTML='';
+  addRow('(111)',36.5,44.0,'single');
+  addRow('(200)+(002)',44.0,52.0,'doublet');
+  addRow('(220)+(202)',64.0,75.0,'doublet');
+  syncRegions();draw();
+  msg('Loaded PtCo L1₀ 5-peak preset: (111) + (200)/(002) + (220)/(202)','ok');
+};
+
+$('multiCalc').onclick=()=>{
+  invalidate();
+  const rows=[...$('peakRows').rows];
+  if(!rows.length){msg('Add a peak region first','warn');return;}
+  try{
+    const peaks=[];
+    let lattice=null;
+    for(const tr of rows){
+      const inp=tr.querySelectorAll('input');
+      const rMode=tr.querySelector('.row-mode')?.value||'single';
+      const label=inp[0].value||'Peak', l=+inp[1].value, r=+inp[2].value;
+      if(rMode==='doublet'){
+        const ia=idxRange(l,r);if(ia.length<8)throw Error(`Too few points in doublet row "${label}"`);
+        const xs=ia.map(i=>state.x[i]), ys=ia.map(i=>state.y[i]);
+        const seeds=seedDoubletForRow(label,xs,ys);
+        const d=fitMultiPeakLM(xs,ys,seeds,{shape:'pvoigt',baseline:'linear'});
+        if(d.lattice&&!lattice)lattice=d.lattice;
+        d.peaks.forEach(({curve,...pk})=>peaks.push(pk));
+      }else{
+        const result=$('calcMode').value==='standard'?analyze(l,r):analyzeSNIP(l,r);
+        peaks.push({label,...result});
+      }
+    }
+    const wh=williamsonHall(peaks,+$('K').value,+$('lambda').value);
+    const latLine=lattice?`<p class="small">Inferred tetragonal lattice (${lattice.pair}): <b>a = ${fmt(lattice.a,4)} Å</b> · <b>c = ${fmt(lattice.c,4)} Å</b> · <b>c/a = ${fmt(lattice.cOverA,4)}</b></p>`:'';
+    $('multiResult').innerHTML='<div class="result"><b>Multi-peak size results</b><table><tr><th>Peak</th><th>Position</th><th>FWHM</th><th>β (°)</th><th>SNR</th><th>D (nm)</th></tr>'+
+      peaks.map(r=>`<tr><td>${escapeHTML(r.label)}</td><td>${fmt(r.peak,3)}°</td><td>${fmt(r.fwhm,3)}°</td><td>${fmt(r.integralBreadth,3)}°</td><td>${fmt(r.snr,1)}</td><td class="val">${fmt(r.D,2)}</td></tr>`).join('')+
+      `</table><p><b>Williamson–Hall (${peaks.length} peaks):</b> ${wh.reason}. ${wh.D_nm===null?'':`D = <b>${fmt(wh.D_nm,2)} nm</b> · strain ε = <b>${fmt(wh.strain,6)}</b> · R² = <b>${fmt(wh.r2,4)}</b>`}</p>${latLine}<p class="small">Isotropic uniform-deformation approximation: β cosθ = Kλ/D + 4ε sinθ. Use at least three distinct clean reflections of one phase, consistent widths and instrumental corrections.</p></div>`;
+    if(wh.points)drawWH(wh);
+    saveResult({method:'multi_peak',settings:analysisSettings(),peaks,williamson_hall:wh,lattice,units:{angle:'degree 2theta',size:'nm',strain:'dimensionless',width:'degree 2theta',lattice:'angstrom'}});
+  }catch(e){invalidate();msg(e.message,'err');}
+};
+
+$('demo').onclick=demo;
+$('demoBimodalBtn').onclick=demoBimodal;
+
+// Initial setup
+addRow('(111)',39,43.5,'single');
+loadDeconvPreset('220');
 mountExports();
-</script></body></html>
+demo();
+try{const savedLang=localStorage.getItem('xrd_scherrer_lang');if(savedLang==='zh')applyLang('zh');}catch(_){}
+</script>
+</body>
+</html>
